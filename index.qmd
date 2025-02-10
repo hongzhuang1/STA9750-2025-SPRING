@@ -1,0 +1,34 @@
+---
+title: "About Me"
+---
+My name is Hong Zhuang. This is my first semester in the QMM program at Baruch College. I graduated with a Bachelor degree in Business Administration from Baruch College and a Master's degree in Science from CUNY, City College.\
+Currently, I'm working as a staff accountant at a retail start-up. I am committed to become a risk analyst at a financial institution. I have passed CFA Level1, Level2 and FRM Level1. If you share the same career path, feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/hongzhuang10/).
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+if(!require("leaflet")){
+    options(repos=c(CRAN="https://cloud.r-project.org"))
+    install.packages("leaflet")
+    stopifnot(require("leaflet"))
+}
+
+baruch_longitude <- -73.98333
+baruch_latitude <- +40.75028
+
+leaflet() |>
+  addTiles() |>
+  setView(baruch_longitude, baruch_latitude, zoom=17) |>
+  addPopups(baruch_longitude, baruch_latitude, 
+            "I am a Master's student at <b>Baruch College</b>!")
+```
+
+```{r}
+#| include: false
+1+1
+```
+--------------
+Last Updated: `r format(Sys.time(), "%A %m %d, %Y at %H:%M%p")`
