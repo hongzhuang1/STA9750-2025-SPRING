@@ -1,0 +1,533 @@
+---
+title: "mini project 01"
+output:
+  html: default
+  pdf: default
+code-fold: true
+---
+
+# Introduction
+In this project, we will use the data from [NYC Open Data]("https://opendata.cityofnewyork.us/"). 
+The data set contains 6,225,611 payroll records and 17 variables, covering payroll 
+information for about 160 agencies in NYC from fiscal years 2014 to 2024. Our goal 
+is to analyze the payroll and evaluate three policy proposals designed to reduce 
+the city's total payroll expenses. You can find a basic description of the 17 
+variables in the data set [Here]("https://data.cityofnewyork.us/City-Government/Citywide-Payroll-Data-Fiscal-Year-/k397-673e/about_data").
+
+## Quick Facts
+1. The chairman of the Civil Service Commission in Manhattan has the highest pay 
+rate, with an hourly rate $566.60.
+
+2. Combining regular and overtime pay, Daniel E Flynn from the Fire Department had 
+the highest total payroll of $521,235.4 in 2021, having worked 1,820 regular hours 
+and 1564.92 overtime hours.
+
+3. William E. Gittens from the Department Of Citywide Admin Services has the most 
+overtime worked, which was 18,564 hours.
+
+4. The Office of Collective Bargaining has the highest average total annual payroll
+per employee, at $96,095.94.
+
+5. The Department of Education has the most employees on the payroll each fiscal year.
+
+6. The Board of Elections has the highest overtime usage, with total overtime worked 
+accounting for about 20% of the total regular hours. 
+
+7. Employees who work outside the five boroughs have an average salary of 
+$91,475.31.
+
+8. The city's aggregate payroll has grown by 35.12% over the past ten fiscal years.
+
+
+# Acquire Data and Import Data into R
+
+Read Data in R
+
+```{r, message=FALSE}
+nyc_payroll <- read.csv("~/STA9750/STA9750-2025-SPRING/data/mp01/nyc_payroll_export.csv")
+```
+
+Load Relevant Packages
+
+```{r, message=FALSE}
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+library(DT)
+library(scales)
+```
+
+Now, let's take a quick look at the payroll data.
+```{r}
+glimpse(nyc_payroll)
+```
+
+
+# Exploratory Data Analysis
+
+## Conventional Formatting 
+- Convert values in some columns to conventional formatting using `string_to_title()`
+- By using the `unique()` function in R, we can get a list of distinct values for
+  a variable. I noticed there are some shorthands in the `agency_name` variable 
+  and some agency names need formal formatting.
+
+```{r}
+nyc_payroll <- nyc_payroll |>
+  mutate(
+    agency_name = str_to_title(agency_name),
+    last_name = str_to_title(last_name),
+    first_name = str_to_title(first_name),
+    work_location_borough = str_to_title(work_location_borough),
+    title_description = str_to_title(title_description),
+    leave_status_as_of_june_30 = str_to_title(leave_status_as_of_june_30)
+  )
+```
+
+
+```{r}
+nyc_payroll <- nyc_payroll |>
+  mutate(
+    agency_name = case_when(
+      agency_name == "Bronx Da" ~ "Bronx District Attorney",  
+      agency_name == "Board Of Correction" ~ "Board Of Corrections",
+      agency_name == "Dept. Of Design & Construction" ~ "Dept Of Design & Construction",
+      agency_name == "Dept. Of Homeless Services" ~ "Dept Of Homeless Services",
+      agency_name == "Office Of Collective Bargainin" ~ "Office Of Collective Bargaining",
+      agency_name == "Board Of Election" ~ "Board Of Elections",
+      agency_name == "Doe Custodial Payrol" ~ "DOE Custodial Payroll",
+      TRUE ~ agency_name
+    )
+  )
+```
+
+## Create an employee salary table for **Eric L. Adams** 
+
+```{r}
+nyc_payroll |>
+  filter(first_name == "Eric" & last_name == "Adams" & title_description == "Mayor") |>
+  mutate(
+    total_salary = regular_gross_paid + total_ot_paid
+  ) |>
+  arrange(fiscal_year)
+```
+
+```{r, message=FALSE}
+
+tbl_txt <- "
+Fiscal Year, Position, Agency, Total Salary
+2022, Mayor, Office of the Mayor, 120088.4	
+2023, Mayor, Office of the Mayor, 258041.2
+2023, Mayor, Office of the Mayor, 257361.2
+"
+
+read_csv(tbl_txt) |> 
+    mutate(`Total Salary` = dollar(`Total Salary`)) |>
+    datatable(options=list(searching=FALSE, 
+                           paging=FALSE,
+                           info=FALSE))
+```
+
+## Analzye the distribution of `base_salary`
+
+In NYC payroll data set, there are three pay types: per annum/prorated annual, 
+per diem and per hour. Let's first take a look at the distribution of `base_salary`
+and determine how to treat any outliers. 
+
+```{r}
+for (i in c("per Annum", "per Day", "per Hour", "Prorated Annual")){
+  print(summary(subset(nyc_payroll, nyc_payroll$pay_basis == i)$base_salary))
+}
+```
+
+### Treatment of Outliers for Per Annum Employees
+
+There are some outliers in this category. For example, some observations have a 
+$1 annual rate. After further investigation, I believe these are just not actual 
+payroll records and are immaterial, so I decided no action was needed to handle 
+these values. I applied a 1,820 hours to this group to compute the pay rate. 
+
+
+### Treatment of Outliers for Per Hour Employees
+
+From the output above, it seems unreasonable that the maximum value for an hourly
+municipal employees was 184,931.45. Upon further investigation, I found that this 
+value comes from the DOE Custodial Payroll, which has only one pay 
+type-an hourly basis. Additionally, half of the records had a per hour rate 
+exceeding $70,000, which suggests the pay is more likely based on an annual salary 
+rather than an hourly rate.
+
+To address the inconsistency between the pay basis and the base salary, 
+I defined a reasonable hourly rate range of $100 for this agency.  For observations 
+that fell outside this range, I converted the pay using 1,820 hours to calculate 
+the hourly pay rate.
+
+```{r}
+nyc_payroll |>
+  filter(agency_name == "DOE Custodial Payroll") |>
+  select(base_salary) |>
+  summary()
+```
+```{r}
+nyc_payroll |>
+  filter(agency_name == "DOE Custodial Payroll") |>
+  select(pay_basis) |>
+  unique()
+  
+```
+
+### Treatment of Outliers for Per Diem Employees
+
+Let's explore the subset with `pay_basis == per Day`. We can see that half of the 
+sample in this category have a base salary per day of less than $33.18.
+If we are converting the pay to an hourly rate by applying 7.5 hours, it's likely
+that some values of `base_salary` are not consistent with the `pay_basis` 
+being "per Day". To address this, I developed complex rules that take into account both
+regular hours and base salary, ensuring that the hourly pay falls within a reasonable 
+range. For example, for the group of employees who worked over 650 regular hours
+and had a third quantile base salary of $380.90, I applied 7.5-hour workday to 
+standardize the calculation.
+
+```{r}
+nyc_payroll |>
+  filter(pay_basis == "per Day") |>
+  select("base_salary") |>
+  summary()
+```
+
+```{r}
+nyc_payroll |>
+  filter(pay_basis == "per Day") |>
+  select("regular_hours") |>
+  summary()
+```
+
+
+## Missing Values 
+
+- Be aware that there are over 10,000 missing values in `first_name` and `last_name`.
+  Due to confidentiality, some first and last names have been replaced with 'Xxxx'.
+  For example, approximately 3,541 payroll records in the Police Department having 
+  missing names in the data set. 
+  
+- I decided to exclude these records from the calculations for certain quick-facts 
+  related questions later.
+
+```{r}
+print(any(is.na(nyc_payroll$first_name)))
+print(any(is.na(nyc_payroll$last_name)))
+print(sum(is.na(nyc_payroll$first_name)))
+print(sum(is.na(nyc_payroll$last_name)))
+```
+
+# Feature Engineering 
+
+- After analyzing the distribution of `base_salary` for each `pay_basis`, we can 
+  create a new variable called `pay_rate` to make these observations 
+  in the data set comparable.
+  
+- To calculate the total compensation at the employee level, I would like 
+  to create a variable `full_name` that concatenates `first_name`, `mid_init` 
+  and `last_name`. I chose not to include `mid_init` for records where `mid_init` 
+  is not a letter.
+  
+- **Caveat**: The new variable `full_name` is not ideal as a primary key. One 
+  obvious drawback is it may not be unique, as some employees can share the same
+  first and last names.
+  
+- I chose to create another variable called `empl_id`, which concatenates 
+  `full_name`, `title_description`, and `agency_start_date`. This will improve 
+  the accuracy of calculations at the employee level.
+  
+- I also created a variable called `total_compensation`, which shows the total
+  pay, including both regular hours worked and overtime hours.
+  
+```{r}
+nyc_payroll <- nyc_payroll |>
+  mutate(
+    pay_rate = case_when(
+      pay_basis %in% c("per Annum", "Prorated Annual") ~ round(base_salary/1820, 2),
+      pay_basis == "per Day" & regular_hours >= 650 ~ round(base_salary/7.5, 2),
+      pay_basis == "per Day" & regular_hours < 650 & base_salary < 40 ~ base_salary,
+      pay_basis == "per Day" & regular_hours < 650 & base_salary >= 40 & base_salary < 250 ~ round(base_salary/2, 2),
+      pay_basis == "per Day" & regular_hours < 650 & base_salary >= 250 & base_salary < 500 ~ round(base_salary/4, 2),
+      pay_basis == "per Day" & regular_hours < 650 & base_salary >= 500 ~ round (base_salary/5, 2),
+      pay_basis == "per Hour" & agency_name != "DOE Custodial Payroll" ~ base_salary,
+      pay_basis == "per Hour" & agency_name == "DOE Custodial Payroll" & base_salary < 100 ~ base_salary,
+      pay_basis == "per Hour" & agency_name == "DOE Custodial Payroll" & base_salary > 100 ~ round(base_salary/1820, 2)
+    ),
+    full_name = ifelse(
+      grepl("^[A-Za-z]$", mid_init), 
+      paste(first_name, mid_init, last_name),
+      paste(first_name, last_name)
+    ),
+    total_compensation = pay_rate * regular_hours + 1.5 * pay_rate * ot_hours,
+    empl_id = paste(full_name, title_description, agency_start_date, sep = "_")
+  )
+```
+
+
+## Some Calculations Related to Quick Facts
+
+### Question 1: Which job title has the highest base rate of pay?
+
+```{r}
+nyc_payroll |>
+  slice_max(pay_rate, n = 1) |>
+  select(agency_name, title_description, pay_rate)
+```
+
+### Question 2: Whcih individual & in what year had the single highest city total payroll?
+
+- In question 2 and 3, I filtered the dataset to include only observations with a 
+  real name.
+
+- Daniel E Flynn from the Fire Department had the highest total payroll of 
+  $572,770.2 in 2021, having worked 2,080 regular hours and 1,564.92 overtime hours.
+
+```{r}
+nyc_payroll |>
+  filter(! is.na(first_name) & ! is.na(last_name) & 
+           first_name != "Xxxx" & last_name != "Xxxx") |>
+  slice_max(total_compensation, n = 1)
+```
+
+
+### Question 3: Which individual worked the most overtime hours in this data set?
+
+- If we aggregate overtime hours by `full_name` only, the output may not be meaningful.
+  For example, employees with the full name "Md S Islam" hold 20 different positions 
+  in NYC, indicating that the distinct employees share the same full name. To 
+  improve accuracy, I decided to group by `empl_id` instead.
+
+- Based on the output, Willam E Gittens, who works as city custodial assistant had
+  a total of 18,564 overtime hours.
+
+```{r}
+nyc_payroll |>
+  filter(! is.na(first_name) & ! is.na(last_name) & first_name != "Xxxx" 
+         & last_name != "Xxxx") |>
+  group_by(empl_id) |>
+  summarize(n_ot_hours = sum(ot_hours)) |>
+  slice_max(n_ot_hours, n = 1)
+```
+
+### Question 4: Which agency has the highest average total annual payroll (based and overtime per employee)?
+
+The Office of Collective Bargaining has the highest average total annual payroll
+per employee $105,584.
+
+```{r, message=FALSE}
+nyc_payroll |>
+  group_by(fiscal_year, agency_name) |>
+  summarize(
+    avg_annual_payroll = sum(total_compensation) / n_distinct(empl_id)
+    ) |>
+  group_by(agency_name) |>
+  summarize(avg_annual_payroll_by_agency = mean(avg_annual_payroll)) |>
+  slice_max(avg_annual_payroll_by_agency, n = 1)
+```
+
+
+### Question 5: Which agency has the most employees on the payroll in each year?
+
+The Department of Education has the most employees on the payroll in each fiscal year.
+
+```{r, message=FALSE}
+nyc_payroll |>
+  group_by(fiscal_year, agency_name) |>
+  summarize(n_employees = n_distinct(empl_id)) |>
+  slice_max(n_employees, n = 1)
+```
+
+### Question 6: Which agency has the highest overtime usage (compared to regular hours)?
+
+First, we can calculate the total number of regular and overtime hours.
+
+From the output, we can see that although the Board of Elections doesn't have the 
+highest overtime hours worked, it has the highest percentage of total overtime 
+relative to total regular hours.
+
+```{r}
+nyc_payroll|>
+  group_by(agency_name) |>
+  summarize(
+    total_regular_hours = sum(regular_hours), 
+    total_ot_hours = sum(ot_hours), 
+    ot_pct_of_regular = total_ot_hours/total_regular_hours
+    ) |>
+  slice_max(ot_pct_of_regular, n = 1)
+```
+
+### Question 7: What is the average salary of employees who work outside the five boroughs?
+
+Employees who work outside the the five boroughs have an average salary of 
+$91,475.31.
+
+```{r}
+nyc_payroll |>
+  filter(! work_location_borough %in% c("Manhattan", "Brookly", "Queens", "Bronx", 
+                                        "Staten Island") ) |>
+  summarize(avg_salary = sum(total_compensation)/ n_distinct(empl_id)) |> 
+  slice_max(avg_salary)
+```
+
+### Question 8: How much has the city's aggregate payroll grown over the past years?
+
+```{r}
+nyc_payroll|>
+  group_by(fiscal_year) |>
+  summarize(aggregate_payroll = sum(total_compensation)) |>
+  arrange(fiscal_year) |>
+  summarize(payroll_growth_rate = last(aggregate_payroll)/first(aggregate_payroll) - 1)
+```
+
+```{r}
+print(sprintf("The city's aggregate payroll has grown %.2f%% over the past 10 fiscal years." , 0.3511706 * 100))
+```
+
+# Policy Analysis 
+
+## Capping Salaries at Mayoral Level
+
+The first policy is to cap salaries at the Mayoral level. It's worth noting that 
+Mayor Bloomberg's salary in 2014 was $1, which was an exception. To ensure a fair
+analysis, I adjusted it to reflect a standard NYC mayor's pay. 
+
+First, I computed the total mayor pay for each fiscal year and used it as a benchmark 
+to identify the employees whose total compensation exceeded the amount in the same 
+fiscal year. From there, I conducted a salary cap analysis.
+
+Based on my analysis, if the salary cap policy had been implemented, 
+it would have saved a total of $92,359,814 over the past ten fiscal years. And 
+the captains from the Fire Department and the Department of Correction would bear 
+the most brunt of the salary cap.
+
+Here is something interesting to note: If we only consider their base salaries, 
+they are actually below the benchmark. However, since 2015, they have worked an 
+average of 1,300 overtime hours per year, which led to their total compensation 
+exceeding the Mayor's level. Next, I will explore the impact of reducing the 
+overtime hours by increasing full-time employment.
+
+
+```{r}
+benchmark <- nyc_payroll |>
+  filter(title_description == "Mayor") |>
+  group_by(fiscal_year) |>
+  summarize(total_mayor_pay = sum(case_when(
+    fiscal_year == 2014 ~ 2 * total_compensation,
+    TRUE ~ total_compensation)) 
+  )
+```
+
+
+```{r}
+nyc_payroll <- nyc_payroll |>
+  left_join(benchmark, by = "fiscal_year") |>
+  rename(salary_cap = total_mayor_pay) |>
+  mutate(
+    is_above_the_cap = ifelse(
+      total_compensation > salary_cap, "Yes", "No"
+    ),
+    pay_savings_from_cap = ifelse(
+      is_above_the_cap == "Yes", round(total_compensation - salary_cap, 2), 0
+    )
+  )
+```
+
+
+```{r}
+sum(nyc_payroll$pay_savings_from_cap)
+```
+
+
+```{r, message=FALSE}
+nyc_payroll |>
+  filter(is_above_the_cap == "Yes") |>
+  group_by(agency_name, title_description) |>
+  summarize(total_savings = sum(pay_savings_from_cap)) |>
+  arrange(desc(total_savings))
+```
+
+
+```{r}
+nyc_payroll |>
+  filter(is_above_the_cap == "Yes", agency_name %in% c("Department Of Correction", "Fire Department"), 
+         title_description == "Captain") |>
+  group_by(fiscal_year) |>
+  summarize(mean(ot_hours))
+```
+
+
+
+
+
+
+## Increasing Staffing to Reduce Overtime Expenses
+
+Now, I wanted to explore the the impact and savings by increasing staffing to reduce
+overtime hours. First, I aggregated the total overtime hours for each combination
+of agency and job title and calculated the number of full-time employee equivalents 
+using a standard of 1,820 hours per full-time employee. Using the average pay rate 
+for each combination of agency and position, I then computed the potential full-time 
+salary if overtime hours were replaced by equivalent full-time positions. 
+
+From my analysis, we can see that replacing overtime hours with full-time employees 
+would have resulted in total savings of $8,293,349,444 over the past ten fiscal 
+years. This policy proves to be more effective in generating savings than the salary cap.
+
+As previously mentioned, there are actually very few municipal employees whose 
+base salaries exceed the Mayor's salary. The main reason their total compensation 
+surpasses this level is the significant amount of overtime worked.
+
+In addition, we can see that a 50% savings can be achieved from increasing the 
+number of full-time employees to reduce overtime hours, particularly in the
+Police Department and the Fire Department. 
+
+```{r, message=FALSE}
+overtime_replacement <- nyc_payroll |>
+  mutate(agency_role = paste(agency_name, title_description, sep = "_")) |>
+  group_by(fiscal_year, agency_role) |>
+  summarize(avg_pay_rate = mean(pay_rate), total_ot_worked = sum(ot_hours)) |>
+  filter(total_ot_worked > 0) |>
+  mutate(
+    full_time_equivalent = round(total_ot_worked/1820, 6),
+    full_time_pay = round(avg_pay_rate * full_time_equivalent * 1820, 2),
+    ot_reduction_savings = total_ot_worked * 1.5 * avg_pay_rate - full_time_pay,
+    agency = str_extract(agency_role, "^[^_]+")
+  ) |>
+  ungroup() |>
+  mutate(
+    total_savings = sum(ot_reduction_savings),
+    savings_pct_of_total = ot_reduction_savings/total_savings
+    )
+```
+
+
+
+```{r}
+overtime_replacement |>
+  group_by(agency) |>
+  summarize(total_savings_pct_by_agency = round(sum(savings_pct_of_total), 6)) |>
+  arrange(desc(total_savings_pct_by_agency))
+```
+
+
+
+```{r}
+sum(overtime_replacement$ot_reduction_savings)
+```
+
+
+
+## Create Your Own Policy Proposal 
+
+
+
+
+
+
+
+
+
+
+
