@@ -116,8 +116,9 @@ Below is a table showing the total pay for the current Mayor of New York City.
 The Mayor of New York City takes office in January, while the fiscal year runs 
 from July to June. As a result, his pay in 2022 was only half of the total annual pay.
 
-**Caveat** For now, let's use `regualr_paid_gross_paid` and `total_ot_paid` to 
-compute the total compensation even though it is not recommended. 
+**Caveat**: Before performing feature engineering, let's temporarily use 
+`regualr_paid_gross_paid` and `total_ot_paid` to compute the total compensation 
+even though it is not recommended.
 
 ::: {.callout-tip title="Salary Table for **Eric L. Adams**"}
 
