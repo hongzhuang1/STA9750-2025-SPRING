@@ -168,7 +168,7 @@ nyc_payroll |>
 #### Per Hour Employees
 
 It seems unreasonable that the maximum value for an hourly
-municipal employees was 184,931.45. Upon further investigation, I found that this 
+municipal employees was $184,931.45. Upon further investigation, I found that this 
 value comes from the DOE Custodial Payroll, which has only one pay 
 type-an hourly basis. Additionally, half of the records had a per hour rate 
 exceeding $70,000, which suggests the pay is more likely based on an annual salary 

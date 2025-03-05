@@ -303,8 +303,8 @@ Salary Table for <strong>Eric L. Adams</strong>
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                           <span class="at">info=</span><span class="cn">FALSE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div class="datatables html-widget html-fill-item" id="htmlwidget-d1d5b840058045bc1ecb" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-d1d5b840058045bc1ecb">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],[2022,2023,2023],["Mayor","Mayor","Mayor"],["Office of the Mayor","Office of the Mayor","Office of the Mayor"],["$120,088","$258,041","$257,361"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Fiscal Year<\/th>\n      <th>Position<\/th>\n      <th>Agency<\/th>\n      <th>Total Salary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"paging":false,"info":false,"columnDefs":[{"className":"dt-right","targets":1},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Fiscal Year","targets":1},{"name":"Position","targets":2},{"name":"Agency","targets":3},{"name":"Total Salary","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-baedd7d3a55085b67c91" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-baedd7d3a55085b67c91">{"x":{"filter":"none","vertical":false,"data":[["1","2","3"],[2022,2023,2023],["Mayor","Mayor","Mayor"],["Office of the Mayor","Office of the Mayor","Office of the Mayor"],["$120,088","$258,041","$257,361"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Fiscal Year<\/th>\n      <th>Position<\/th>\n      <th>Agency<\/th>\n      <th>Total Salary<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"paging":false,"info":false,"columnDefs":[{"className":"dt-right","targets":1},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"Fiscal Year","targets":1},{"name":"Position","targets":2},{"name":"Agency","targets":3},{"name":"Total Salary","targets":4}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </div>
@@ -328,7 +328,7 @@ Salary Table for <strong>Eric L. Adams</strong>
 </section>
 <section id="per-hour-employees" class="level4">
 <h4 class="anchored" data-anchor-id="per-hour-employees">Per Hour Employees</h4>
-<p>It seems unreasonable that the maximum value for an hourly municipal employees was 184,931.45. Upon further investigation, I found that this value comes from the DOE Custodial Payroll, which has only one pay type-an hourly basis. Additionally, half of the records had a per hour rate exceeding $70,000, which suggests the pay is more likely based on an annual salary rather than an hourly rate.</p>
+<p>It seems unreasonable that the maximum value for an hourly municipal employees was $184,931.45. Upon further investigation, I found that this value comes from the DOE Custodial Payroll, which has only one pay type-an hourly basis. Additionally, half of the records had a per hour rate exceeding $70,000, which suggests the pay is more likely based on an annual salary rather than an hourly rate.</p>
 <p>To address the inconsistency between the pay basis and the base salary, I defined a reasonable hourly rate range of $100 for this agency. For observations that fell outside this range, I calculated the hourly pay rate using 1,820 hours.</p>
 <div class="cell">
 <details class="code-fold">
@@ -603,23 +603,23 @@ Calculations Related to Qucik Facts
 <span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="jsspdkuqie" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#jsspdkuqie table {
+<div id="xlepwjvhgb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xlepwjvhgb table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#jsspdkuqie thead, #jsspdkuqie tbody, #jsspdkuqie tfoot, #jsspdkuqie tr, #jsspdkuqie td, #jsspdkuqie th {
+#xlepwjvhgb thead, #xlepwjvhgb tbody, #xlepwjvhgb tfoot, #xlepwjvhgb tr, #xlepwjvhgb td, #xlepwjvhgb th {
   border-style: none;
 }
 
-#jsspdkuqie p {
+#xlepwjvhgb p {
   margin: 0;
   padding: 0;
 }
 
-#jsspdkuqie .gt_table {
+#xlepwjvhgb .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -645,12 +645,12 @@ Calculations Related to Qucik Facts
   border-left-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_caption {
+#xlepwjvhgb .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#jsspdkuqie .gt_title {
+#xlepwjvhgb .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -662,7 +662,7 @@ Calculations Related to Qucik Facts
   border-bottom-width: 0;
 }
 
-#jsspdkuqie .gt_subtitle {
+#xlepwjvhgb .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -674,7 +674,7 @@ Calculations Related to Qucik Facts
   border-top-width: 0;
 }
 
-#jsspdkuqie .gt_heading {
+#xlepwjvhgb .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -686,13 +686,13 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_bottom_border {
+#xlepwjvhgb .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_col_headings {
+#xlepwjvhgb .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -707,7 +707,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_col_heading {
+#xlepwjvhgb .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -727,7 +727,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#jsspdkuqie .gt_column_spanner_outer {
+#xlepwjvhgb .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -739,15 +739,15 @@ Calculations Related to Qucik Facts
   padding-right: 4px;
 }
 
-#jsspdkuqie .gt_column_spanner_outer:first-child {
+#xlepwjvhgb .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#jsspdkuqie .gt_column_spanner_outer:last-child {
+#xlepwjvhgb .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#jsspdkuqie .gt_column_spanner {
+#xlepwjvhgb .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -759,11 +759,11 @@ Calculations Related to Qucik Facts
   width: 100%;
 }
 
-#jsspdkuqie .gt_spanner_row {
+#xlepwjvhgb .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#jsspdkuqie .gt_group_heading {
+#xlepwjvhgb .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -789,7 +789,7 @@ Calculations Related to Qucik Facts
   text-align: left;
 }
 
-#jsspdkuqie .gt_empty_group_heading {
+#xlepwjvhgb .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -804,15 +804,15 @@ Calculations Related to Qucik Facts
   vertical-align: middle;
 }
 
-#jsspdkuqie .gt_from_md > :first-child {
+#xlepwjvhgb .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#jsspdkuqie .gt_from_md > :last-child {
+#xlepwjvhgb .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#jsspdkuqie .gt_row {
+#xlepwjvhgb .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -831,7 +831,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#jsspdkuqie .gt_stub {
+#xlepwjvhgb .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -844,7 +844,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#jsspdkuqie .gt_stub_row_group {
+#xlepwjvhgb .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -858,15 +858,15 @@ Calculations Related to Qucik Facts
   vertical-align: top;
 }
 
-#jsspdkuqie .gt_row_group_first td {
+#xlepwjvhgb .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#jsspdkuqie .gt_row_group_first th {
+#xlepwjvhgb .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#jsspdkuqie .gt_summary_row {
+#xlepwjvhgb .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -876,16 +876,16 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#jsspdkuqie .gt_first_summary_row {
+#xlepwjvhgb .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_first_summary_row.thick {
+#xlepwjvhgb .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#jsspdkuqie .gt_last_summary_row {
+#xlepwjvhgb .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -895,7 +895,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_grand_summary_row {
+#xlepwjvhgb .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -905,7 +905,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#jsspdkuqie .gt_first_grand_summary_row {
+#xlepwjvhgb .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -915,7 +915,7 @@ Calculations Related to Qucik Facts
   border-top-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_last_grand_summary_row_top {
+#xlepwjvhgb .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -925,11 +925,11 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_striped {
+#xlepwjvhgb .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#jsspdkuqie .gt_table_body {
+#xlepwjvhgb .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -938,7 +938,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_footnotes {
+#xlepwjvhgb .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -952,7 +952,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_footnote {
+#xlepwjvhgb .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -961,7 +961,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#jsspdkuqie .gt_sourcenotes {
+#xlepwjvhgb .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -975,7 +975,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#jsspdkuqie .gt_sourcenote {
+#xlepwjvhgb .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -983,72 +983,72 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#jsspdkuqie .gt_left {
+#xlepwjvhgb .gt_left {
   text-align: left;
 }
 
-#jsspdkuqie .gt_center {
+#xlepwjvhgb .gt_center {
   text-align: center;
 }
 
-#jsspdkuqie .gt_right {
+#xlepwjvhgb .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#jsspdkuqie .gt_font_normal {
+#xlepwjvhgb .gt_font_normal {
   font-weight: normal;
 }
 
-#jsspdkuqie .gt_font_bold {
+#xlepwjvhgb .gt_font_bold {
   font-weight: bold;
 }
 
-#jsspdkuqie .gt_font_italic {
+#xlepwjvhgb .gt_font_italic {
   font-style: italic;
 }
 
-#jsspdkuqie .gt_super {
+#xlepwjvhgb .gt_super {
   font-size: 65%;
 }
 
-#jsspdkuqie .gt_footnote_marks {
+#xlepwjvhgb .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#jsspdkuqie .gt_asterisk {
+#xlepwjvhgb .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#jsspdkuqie .gt_indent_1 {
+#xlepwjvhgb .gt_indent_1 {
   text-indent: 5px;
 }
 
-#jsspdkuqie .gt_indent_2 {
+#xlepwjvhgb .gt_indent_2 {
   text-indent: 10px;
 }
 
-#jsspdkuqie .gt_indent_3 {
+#xlepwjvhgb .gt_indent_3 {
   text-indent: 15px;
 }
 
-#jsspdkuqie .gt_indent_4 {
+#xlepwjvhgb .gt_indent_4 {
   text-indent: 20px;
 }
 
-#jsspdkuqie .gt_indent_5 {
+#xlepwjvhgb .gt_indent_5 {
   text-indent: 25px;
 }
 
-#jsspdkuqie .katex-display {
+#xlepwjvhgb .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#jsspdkuqie div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#xlepwjvhgb div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1169,23 +1169,23 @@ Calculations Related to Qucik Facts
 <span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="clkxjpfect" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#clkxjpfect table {
+<div id="pkxoniogki" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pkxoniogki table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#clkxjpfect thead, #clkxjpfect tbody, #clkxjpfect tfoot, #clkxjpfect tr, #clkxjpfect td, #clkxjpfect th {
+#pkxoniogki thead, #pkxoniogki tbody, #pkxoniogki tfoot, #pkxoniogki tr, #pkxoniogki td, #pkxoniogki th {
   border-style: none;
 }
 
-#clkxjpfect p {
+#pkxoniogki p {
   margin: 0;
   padding: 0;
 }
 
-#clkxjpfect .gt_table {
+#pkxoniogki .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1211,12 +1211,12 @@ Calculations Related to Qucik Facts
   border-left-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_caption {
+#pkxoniogki .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#clkxjpfect .gt_title {
+#pkxoniogki .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1228,7 +1228,7 @@ Calculations Related to Qucik Facts
   border-bottom-width: 0;
 }
 
-#clkxjpfect .gt_subtitle {
+#pkxoniogki .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1240,7 +1240,7 @@ Calculations Related to Qucik Facts
   border-top-width: 0;
 }
 
-#clkxjpfect .gt_heading {
+#pkxoniogki .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1252,13 +1252,13 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_bottom_border {
+#pkxoniogki .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_col_headings {
+#pkxoniogki .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1273,7 +1273,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_col_heading {
+#pkxoniogki .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1293,7 +1293,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#clkxjpfect .gt_column_spanner_outer {
+#pkxoniogki .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1305,15 +1305,15 @@ Calculations Related to Qucik Facts
   padding-right: 4px;
 }
 
-#clkxjpfect .gt_column_spanner_outer:first-child {
+#pkxoniogki .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#clkxjpfect .gt_column_spanner_outer:last-child {
+#pkxoniogki .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#clkxjpfect .gt_column_spanner {
+#pkxoniogki .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1325,11 +1325,11 @@ Calculations Related to Qucik Facts
   width: 100%;
 }
 
-#clkxjpfect .gt_spanner_row {
+#pkxoniogki .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#clkxjpfect .gt_group_heading {
+#pkxoniogki .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1355,7 +1355,7 @@ Calculations Related to Qucik Facts
   text-align: left;
 }
 
-#clkxjpfect .gt_empty_group_heading {
+#pkxoniogki .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1370,15 +1370,15 @@ Calculations Related to Qucik Facts
   vertical-align: middle;
 }
 
-#clkxjpfect .gt_from_md > :first-child {
+#pkxoniogki .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#clkxjpfect .gt_from_md > :last-child {
+#pkxoniogki .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#clkxjpfect .gt_row {
+#pkxoniogki .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1397,7 +1397,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#clkxjpfect .gt_stub {
+#pkxoniogki .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1410,7 +1410,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#clkxjpfect .gt_stub_row_group {
+#pkxoniogki .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1424,15 +1424,15 @@ Calculations Related to Qucik Facts
   vertical-align: top;
 }
 
-#clkxjpfect .gt_row_group_first td {
+#pkxoniogki .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#clkxjpfect .gt_row_group_first th {
+#pkxoniogki .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#clkxjpfect .gt_summary_row {
+#pkxoniogki .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1442,16 +1442,16 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#clkxjpfect .gt_first_summary_row {
+#pkxoniogki .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_first_summary_row.thick {
+#pkxoniogki .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#clkxjpfect .gt_last_summary_row {
+#pkxoniogki .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1461,7 +1461,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_grand_summary_row {
+#pkxoniogki .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1471,7 +1471,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#clkxjpfect .gt_first_grand_summary_row {
+#pkxoniogki .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1481,7 +1481,7 @@ Calculations Related to Qucik Facts
   border-top-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_last_grand_summary_row_top {
+#pkxoniogki .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1491,11 +1491,11 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_striped {
+#pkxoniogki .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#clkxjpfect .gt_table_body {
+#pkxoniogki .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1504,7 +1504,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_footnotes {
+#pkxoniogki .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1518,7 +1518,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_footnote {
+#pkxoniogki .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1527,7 +1527,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#clkxjpfect .gt_sourcenotes {
+#pkxoniogki .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1541,7 +1541,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#clkxjpfect .gt_sourcenote {
+#pkxoniogki .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1549,72 +1549,72 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#clkxjpfect .gt_left {
+#pkxoniogki .gt_left {
   text-align: left;
 }
 
-#clkxjpfect .gt_center {
+#pkxoniogki .gt_center {
   text-align: center;
 }
 
-#clkxjpfect .gt_right {
+#pkxoniogki .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#clkxjpfect .gt_font_normal {
+#pkxoniogki .gt_font_normal {
   font-weight: normal;
 }
 
-#clkxjpfect .gt_font_bold {
+#pkxoniogki .gt_font_bold {
   font-weight: bold;
 }
 
-#clkxjpfect .gt_font_italic {
+#pkxoniogki .gt_font_italic {
   font-style: italic;
 }
 
-#clkxjpfect .gt_super {
+#pkxoniogki .gt_super {
   font-size: 65%;
 }
 
-#clkxjpfect .gt_footnote_marks {
+#pkxoniogki .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#clkxjpfect .gt_asterisk {
+#pkxoniogki .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#clkxjpfect .gt_indent_1 {
+#pkxoniogki .gt_indent_1 {
   text-indent: 5px;
 }
 
-#clkxjpfect .gt_indent_2 {
+#pkxoniogki .gt_indent_2 {
   text-indent: 10px;
 }
 
-#clkxjpfect .gt_indent_3 {
+#pkxoniogki .gt_indent_3 {
   text-indent: 15px;
 }
 
-#clkxjpfect .gt_indent_4 {
+#pkxoniogki .gt_indent_4 {
   text-indent: 20px;
 }
 
-#clkxjpfect .gt_indent_5 {
+#pkxoniogki .gt_indent_5 {
   text-indent: 25px;
 }
 
-#clkxjpfect .katex-display {
+#pkxoniogki .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#clkxjpfect div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#pkxoniogki div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1767,23 +1767,23 @@ Calculations Related to Qucik Facts
 <span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="hagbticeha" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#hagbticeha table {
+<div id="gdrygknllw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#gdrygknllw table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#hagbticeha thead, #hagbticeha tbody, #hagbticeha tfoot, #hagbticeha tr, #hagbticeha td, #hagbticeha th {
+#gdrygknllw thead, #gdrygknllw tbody, #gdrygknllw tfoot, #gdrygknllw tr, #gdrygknllw td, #gdrygknllw th {
   border-style: none;
 }
 
-#hagbticeha p {
+#gdrygknllw p {
   margin: 0;
   padding: 0;
 }
 
-#hagbticeha .gt_table {
+#gdrygknllw .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1809,12 +1809,12 @@ Calculations Related to Qucik Facts
   border-left-color: #D3D3D3;
 }
 
-#hagbticeha .gt_caption {
+#gdrygknllw .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#hagbticeha .gt_title {
+#gdrygknllw .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1826,7 +1826,7 @@ Calculations Related to Qucik Facts
   border-bottom-width: 0;
 }
 
-#hagbticeha .gt_subtitle {
+#gdrygknllw .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1838,7 +1838,7 @@ Calculations Related to Qucik Facts
   border-top-width: 0;
 }
 
-#hagbticeha .gt_heading {
+#gdrygknllw .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1850,13 +1850,13 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#hagbticeha .gt_bottom_border {
+#gdrygknllw .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hagbticeha .gt_col_headings {
+#gdrygknllw .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1871,7 +1871,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#hagbticeha .gt_col_heading {
+#gdrygknllw .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1891,7 +1891,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#hagbticeha .gt_column_spanner_outer {
+#gdrygknllw .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1903,15 +1903,15 @@ Calculations Related to Qucik Facts
   padding-right: 4px;
 }
 
-#hagbticeha .gt_column_spanner_outer:first-child {
+#gdrygknllw .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hagbticeha .gt_column_spanner_outer:last-child {
+#gdrygknllw .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hagbticeha .gt_column_spanner {
+#gdrygknllw .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1923,11 +1923,11 @@ Calculations Related to Qucik Facts
   width: 100%;
 }
 
-#hagbticeha .gt_spanner_row {
+#gdrygknllw .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#hagbticeha .gt_group_heading {
+#gdrygknllw .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1953,7 +1953,7 @@ Calculations Related to Qucik Facts
   text-align: left;
 }
 
-#hagbticeha .gt_empty_group_heading {
+#gdrygknllw .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1968,15 +1968,15 @@ Calculations Related to Qucik Facts
   vertical-align: middle;
 }
 
-#hagbticeha .gt_from_md > :first-child {
+#gdrygknllw .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hagbticeha .gt_from_md > :last-child {
+#gdrygknllw .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hagbticeha .gt_row {
+#gdrygknllw .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1995,7 +1995,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#hagbticeha .gt_stub {
+#gdrygknllw .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2008,7 +2008,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#hagbticeha .gt_stub_row_group {
+#gdrygknllw .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2022,15 +2022,15 @@ Calculations Related to Qucik Facts
   vertical-align: top;
 }
 
-#hagbticeha .gt_row_group_first td {
+#gdrygknllw .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#hagbticeha .gt_row_group_first th {
+#gdrygknllw .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#hagbticeha .gt_summary_row {
+#gdrygknllw .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2040,16 +2040,16 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#hagbticeha .gt_first_summary_row {
+#gdrygknllw .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#hagbticeha .gt_first_summary_row.thick {
+#gdrygknllw .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#hagbticeha .gt_last_summary_row {
+#gdrygknllw .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2059,7 +2059,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#hagbticeha .gt_grand_summary_row {
+#gdrygknllw .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2069,7 +2069,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#hagbticeha .gt_first_grand_summary_row {
+#gdrygknllw .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2079,7 +2079,7 @@ Calculations Related to Qucik Facts
   border-top-color: #D3D3D3;
 }
 
-#hagbticeha .gt_last_grand_summary_row_top {
+#gdrygknllw .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2089,11 +2089,11 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#hagbticeha .gt_striped {
+#gdrygknllw .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hagbticeha .gt_table_body {
+#gdrygknllw .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2102,7 +2102,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#hagbticeha .gt_footnotes {
+#gdrygknllw .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2116,7 +2116,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#hagbticeha .gt_footnote {
+#gdrygknllw .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2125,7 +2125,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#hagbticeha .gt_sourcenotes {
+#gdrygknllw .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2139,7 +2139,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#hagbticeha .gt_sourcenote {
+#gdrygknllw .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2147,72 +2147,72 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#hagbticeha .gt_left {
+#gdrygknllw .gt_left {
   text-align: left;
 }
 
-#hagbticeha .gt_center {
+#gdrygknllw .gt_center {
   text-align: center;
 }
 
-#hagbticeha .gt_right {
+#gdrygknllw .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hagbticeha .gt_font_normal {
+#gdrygknllw .gt_font_normal {
   font-weight: normal;
 }
 
-#hagbticeha .gt_font_bold {
+#gdrygknllw .gt_font_bold {
   font-weight: bold;
 }
 
-#hagbticeha .gt_font_italic {
+#gdrygknllw .gt_font_italic {
   font-style: italic;
 }
 
-#hagbticeha .gt_super {
+#gdrygknllw .gt_super {
   font-size: 65%;
 }
 
-#hagbticeha .gt_footnote_marks {
+#gdrygknllw .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#hagbticeha .gt_asterisk {
+#gdrygknllw .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#hagbticeha .gt_indent_1 {
+#gdrygknllw .gt_indent_1 {
   text-indent: 5px;
 }
 
-#hagbticeha .gt_indent_2 {
+#gdrygknllw .gt_indent_2 {
   text-indent: 10px;
 }
 
-#hagbticeha .gt_indent_3 {
+#gdrygknllw .gt_indent_3 {
   text-indent: 15px;
 }
 
-#hagbticeha .gt_indent_4 {
+#gdrygknllw .gt_indent_4 {
   text-indent: 20px;
 }
 
-#hagbticeha .gt_indent_5 {
+#gdrygknllw .gt_indent_5 {
   text-indent: 25px;
 }
 
-#hagbticeha .katex-display {
+#gdrygknllw .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#hagbticeha div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#gdrygknllw div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -2340,23 +2340,23 @@ Calculations Related to Qucik Facts
 <span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="nmnxqpzlel" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#nmnxqpzlel table {
+<div id="iffozbfsoh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#iffozbfsoh table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#nmnxqpzlel thead, #nmnxqpzlel tbody, #nmnxqpzlel tfoot, #nmnxqpzlel tr, #nmnxqpzlel td, #nmnxqpzlel th {
+#iffozbfsoh thead, #iffozbfsoh tbody, #iffozbfsoh tfoot, #iffozbfsoh tr, #iffozbfsoh td, #iffozbfsoh th {
   border-style: none;
 }
 
-#nmnxqpzlel p {
+#iffozbfsoh p {
   margin: 0;
   padding: 0;
 }
 
-#nmnxqpzlel .gt_table {
+#iffozbfsoh .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2382,12 +2382,12 @@ Calculations Related to Qucik Facts
   border-left-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_caption {
+#iffozbfsoh .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#nmnxqpzlel .gt_title {
+#iffozbfsoh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2399,7 +2399,7 @@ Calculations Related to Qucik Facts
   border-bottom-width: 0;
 }
 
-#nmnxqpzlel .gt_subtitle {
+#iffozbfsoh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2411,7 +2411,7 @@ Calculations Related to Qucik Facts
   border-top-width: 0;
 }
 
-#nmnxqpzlel .gt_heading {
+#iffozbfsoh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2423,13 +2423,13 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_bottom_border {
+#iffozbfsoh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_col_headings {
+#iffozbfsoh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2444,7 +2444,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_col_heading {
+#iffozbfsoh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2464,7 +2464,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#nmnxqpzlel .gt_column_spanner_outer {
+#iffozbfsoh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2476,15 +2476,15 @@ Calculations Related to Qucik Facts
   padding-right: 4px;
 }
 
-#nmnxqpzlel .gt_column_spanner_outer:first-child {
+#iffozbfsoh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nmnxqpzlel .gt_column_spanner_outer:last-child {
+#iffozbfsoh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nmnxqpzlel .gt_column_spanner {
+#iffozbfsoh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2496,11 +2496,11 @@ Calculations Related to Qucik Facts
   width: 100%;
 }
 
-#nmnxqpzlel .gt_spanner_row {
+#iffozbfsoh .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#nmnxqpzlel .gt_group_heading {
+#iffozbfsoh .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2526,7 +2526,7 @@ Calculations Related to Qucik Facts
   text-align: left;
 }
 
-#nmnxqpzlel .gt_empty_group_heading {
+#iffozbfsoh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2541,15 +2541,15 @@ Calculations Related to Qucik Facts
   vertical-align: middle;
 }
 
-#nmnxqpzlel .gt_from_md > :first-child {
+#iffozbfsoh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nmnxqpzlel .gt_from_md > :last-child {
+#iffozbfsoh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nmnxqpzlel .gt_row {
+#iffozbfsoh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2568,7 +2568,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#nmnxqpzlel .gt_stub {
+#iffozbfsoh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2581,7 +2581,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#nmnxqpzlel .gt_stub_row_group {
+#iffozbfsoh .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2595,15 +2595,15 @@ Calculations Related to Qucik Facts
   vertical-align: top;
 }
 
-#nmnxqpzlel .gt_row_group_first td {
+#iffozbfsoh .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#nmnxqpzlel .gt_row_group_first th {
+#iffozbfsoh .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#nmnxqpzlel .gt_summary_row {
+#iffozbfsoh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2613,16 +2613,16 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#nmnxqpzlel .gt_first_summary_row {
+#iffozbfsoh .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_first_summary_row.thick {
+#iffozbfsoh .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#nmnxqpzlel .gt_last_summary_row {
+#iffozbfsoh .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2632,7 +2632,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_grand_summary_row {
+#iffozbfsoh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2642,7 +2642,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#nmnxqpzlel .gt_first_grand_summary_row {
+#iffozbfsoh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2652,7 +2652,7 @@ Calculations Related to Qucik Facts
   border-top-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_last_grand_summary_row_top {
+#iffozbfsoh .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2662,11 +2662,11 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_striped {
+#iffozbfsoh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nmnxqpzlel .gt_table_body {
+#iffozbfsoh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2675,7 +2675,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_footnotes {
+#iffozbfsoh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2689,7 +2689,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_footnote {
+#iffozbfsoh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2698,7 +2698,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#nmnxqpzlel .gt_sourcenotes {
+#iffozbfsoh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2712,7 +2712,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#nmnxqpzlel .gt_sourcenote {
+#iffozbfsoh .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2720,72 +2720,72 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#nmnxqpzlel .gt_left {
+#iffozbfsoh .gt_left {
   text-align: left;
 }
 
-#nmnxqpzlel .gt_center {
+#iffozbfsoh .gt_center {
   text-align: center;
 }
 
-#nmnxqpzlel .gt_right {
+#iffozbfsoh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nmnxqpzlel .gt_font_normal {
+#iffozbfsoh .gt_font_normal {
   font-weight: normal;
 }
 
-#nmnxqpzlel .gt_font_bold {
+#iffozbfsoh .gt_font_bold {
   font-weight: bold;
 }
 
-#nmnxqpzlel .gt_font_italic {
+#iffozbfsoh .gt_font_italic {
   font-style: italic;
 }
 
-#nmnxqpzlel .gt_super {
+#iffozbfsoh .gt_super {
   font-size: 65%;
 }
 
-#nmnxqpzlel .gt_footnote_marks {
+#iffozbfsoh .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#nmnxqpzlel .gt_asterisk {
+#iffozbfsoh .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#nmnxqpzlel .gt_indent_1 {
+#iffozbfsoh .gt_indent_1 {
   text-indent: 5px;
 }
 
-#nmnxqpzlel .gt_indent_2 {
+#iffozbfsoh .gt_indent_2 {
   text-indent: 10px;
 }
 
-#nmnxqpzlel .gt_indent_3 {
+#iffozbfsoh .gt_indent_3 {
   text-indent: 15px;
 }
 
-#nmnxqpzlel .gt_indent_4 {
+#iffozbfsoh .gt_indent_4 {
   text-indent: 20px;
 }
 
-#nmnxqpzlel .gt_indent_5 {
+#iffozbfsoh .gt_indent_5 {
   text-indent: 25px;
 }
 
-#nmnxqpzlel .katex-display {
+#iffozbfsoh .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#nmnxqpzlel div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#iffozbfsoh div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -2901,23 +2901,23 @@ Calculations Related to Qucik Facts
 <span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div id="qpbwkmbhsu" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#qpbwkmbhsu table {
+<div id="nbswkvfqiv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#nbswkvfqiv table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#qpbwkmbhsu thead, #qpbwkmbhsu tbody, #qpbwkmbhsu tfoot, #qpbwkmbhsu tr, #qpbwkmbhsu td, #qpbwkmbhsu th {
+#nbswkvfqiv thead, #nbswkvfqiv tbody, #nbswkvfqiv tfoot, #nbswkvfqiv tr, #nbswkvfqiv td, #nbswkvfqiv th {
   border-style: none;
 }
 
-#qpbwkmbhsu p {
+#nbswkvfqiv p {
   margin: 0;
   padding: 0;
 }
 
-#qpbwkmbhsu .gt_table {
+#nbswkvfqiv .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2943,12 +2943,12 @@ Calculations Related to Qucik Facts
   border-left-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_caption {
+#nbswkvfqiv .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#qpbwkmbhsu .gt_title {
+#nbswkvfqiv .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2960,7 +2960,7 @@ Calculations Related to Qucik Facts
   border-bottom-width: 0;
 }
 
-#qpbwkmbhsu .gt_subtitle {
+#nbswkvfqiv .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2972,7 +2972,7 @@ Calculations Related to Qucik Facts
   border-top-width: 0;
 }
 
-#qpbwkmbhsu .gt_heading {
+#nbswkvfqiv .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2984,13 +2984,13 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_bottom_border {
+#nbswkvfqiv .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_col_headings {
+#nbswkvfqiv .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3005,7 +3005,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_col_heading {
+#nbswkvfqiv .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3025,7 +3025,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#qpbwkmbhsu .gt_column_spanner_outer {
+#nbswkvfqiv .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3037,15 +3037,15 @@ Calculations Related to Qucik Facts
   padding-right: 4px;
 }
 
-#qpbwkmbhsu .gt_column_spanner_outer:first-child {
+#nbswkvfqiv .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#qpbwkmbhsu .gt_column_spanner_outer:last-child {
+#nbswkvfqiv .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#qpbwkmbhsu .gt_column_spanner {
+#nbswkvfqiv .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -3057,11 +3057,11 @@ Calculations Related to Qucik Facts
   width: 100%;
 }
 
-#qpbwkmbhsu .gt_spanner_row {
+#nbswkvfqiv .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#qpbwkmbhsu .gt_group_heading {
+#nbswkvfqiv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3087,7 +3087,7 @@ Calculations Related to Qucik Facts
   text-align: left;
 }
 
-#qpbwkmbhsu .gt_empty_group_heading {
+#nbswkvfqiv .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -3102,15 +3102,15 @@ Calculations Related to Qucik Facts
   vertical-align: middle;
 }
 
-#qpbwkmbhsu .gt_from_md > :first-child {
+#nbswkvfqiv .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#qpbwkmbhsu .gt_from_md > :last-child {
+#nbswkvfqiv .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#qpbwkmbhsu .gt_row {
+#nbswkvfqiv .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3129,7 +3129,7 @@ Calculations Related to Qucik Facts
   overflow-x: hidden;
 }
 
-#qpbwkmbhsu .gt_stub {
+#nbswkvfqiv .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3142,7 +3142,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#qpbwkmbhsu .gt_stub_row_group {
+#nbswkvfqiv .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -3156,15 +3156,15 @@ Calculations Related to Qucik Facts
   vertical-align: top;
 }
 
-#qpbwkmbhsu .gt_row_group_first td {
+#nbswkvfqiv .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#qpbwkmbhsu .gt_row_group_first th {
+#nbswkvfqiv .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#qpbwkmbhsu .gt_summary_row {
+#nbswkvfqiv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3174,16 +3174,16 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#qpbwkmbhsu .gt_first_summary_row {
+#nbswkvfqiv .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_first_summary_row.thick {
+#nbswkvfqiv .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#qpbwkmbhsu .gt_last_summary_row {
+#nbswkvfqiv .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3193,7 +3193,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_grand_summary_row {
+#nbswkvfqiv .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3203,7 +3203,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#qpbwkmbhsu .gt_first_grand_summary_row {
+#nbswkvfqiv .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3213,7 +3213,7 @@ Calculations Related to Qucik Facts
   border-top-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_last_grand_summary_row_top {
+#nbswkvfqiv .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3223,11 +3223,11 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_striped {
+#nbswkvfqiv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#qpbwkmbhsu .gt_table_body {
+#nbswkvfqiv .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3236,7 +3236,7 @@ Calculations Related to Qucik Facts
   border-bottom-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_footnotes {
+#nbswkvfqiv .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3250,7 +3250,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_footnote {
+#nbswkvfqiv .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3259,7 +3259,7 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#qpbwkmbhsu .gt_sourcenotes {
+#nbswkvfqiv .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3273,7 +3273,7 @@ Calculations Related to Qucik Facts
   border-right-color: #D3D3D3;
 }
 
-#qpbwkmbhsu .gt_sourcenote {
+#nbswkvfqiv .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3281,72 +3281,72 @@ Calculations Related to Qucik Facts
   padding-right: 5px;
 }
 
-#qpbwkmbhsu .gt_left {
+#nbswkvfqiv .gt_left {
   text-align: left;
 }
 
-#qpbwkmbhsu .gt_center {
+#nbswkvfqiv .gt_center {
   text-align: center;
 }
 
-#qpbwkmbhsu .gt_right {
+#nbswkvfqiv .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#qpbwkmbhsu .gt_font_normal {
+#nbswkvfqiv .gt_font_normal {
   font-weight: normal;
 }
 
-#qpbwkmbhsu .gt_font_bold {
+#nbswkvfqiv .gt_font_bold {
   font-weight: bold;
 }
 
-#qpbwkmbhsu .gt_font_italic {
+#nbswkvfqiv .gt_font_italic {
   font-style: italic;
 }
 
-#qpbwkmbhsu .gt_super {
+#nbswkvfqiv .gt_super {
   font-size: 65%;
 }
 
-#qpbwkmbhsu .gt_footnote_marks {
+#nbswkvfqiv .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#qpbwkmbhsu .gt_asterisk {
+#nbswkvfqiv .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#qpbwkmbhsu .gt_indent_1 {
+#nbswkvfqiv .gt_indent_1 {
   text-indent: 5px;
 }
 
-#qpbwkmbhsu .gt_indent_2 {
+#nbswkvfqiv .gt_indent_2 {
   text-indent: 10px;
 }
 
-#qpbwkmbhsu .gt_indent_3 {
+#nbswkvfqiv .gt_indent_3 {
   text-indent: 15px;
 }
 
-#qpbwkmbhsu .gt_indent_4 {
+#nbswkvfqiv .gt_indent_4 {
   text-indent: 20px;
 }
 
-#qpbwkmbhsu .gt_indent_5 {
+#nbswkvfqiv .gt_indent_5 {
   text-indent: 25px;
 }
 
-#qpbwkmbhsu .katex-display {
+#nbswkvfqiv .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#qpbwkmbhsu div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#nbswkvfqiv div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
