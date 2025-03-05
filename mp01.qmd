@@ -63,7 +63,7 @@ library(scales)
 library(gt)
 ```
 
-Read Data in R
+Read Data into R
 
 ```{r, message=FALSE}
 nyc_payroll <- read.csv("~/STA9750/STA9750-2025-SPRING/data/mp01/nyc_payroll_export.csv")
@@ -167,7 +167,7 @@ nyc_payroll |>
 ```
 #### Per Hour Employees
 
-From the output below, it seems unreasonable that the maximum value for an hourly
+It seems unreasonable that the maximum value for an hourly
 municipal employees was 184,931.45. Upon further investigation, I found that this 
 value comes from the DOE Custodial Payroll, which has only one pay 
 type-an hourly basis. Additionally, half of the records had a per hour rate 
