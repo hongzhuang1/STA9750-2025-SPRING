@@ -720,15 +720,57 @@ potential savings.
 
 ### My Own Policy Proposal 
 
-One of the challenges of replacing overtime hours with full-time employees
-is that some positions require highly specialized skills. In such cases, implementing
-a salary cap could risk lowering the quality of services provided to the public.
-
 My proposal is to ensure employees are compensated fairly while also equipping 
 them with the necessary resources and training to enhance efficiency. Rather than
 focusing solely on salary caps, we can establish an upper limit on overtime hours.
-By capping overtime, we can not only improve productivity but also reduce overall
-payroll expenses.
+For example, we can set an overtime upper limit of 500 hours, for any excessive
+overtime hours we can replace them with full-time employees. 
+
+Table 6 illustrates the potential savings by setting a cap of 500 overtime hours 
+per combination of agency and role, compared to Table 5, which shows the projected 
+savings by replacing every single overtime hour with full-time equivalents. Although
+the payroll reduction isn't exactly the same, for instance, the Police Department
+could have saved $1,619,230, this approach makes it more feasible to implement the 
+policy without significantly increasing the hiring of full-time employees. Additionally,
+one challenge of replacing overtime hours with full-time employees is that some 
+positions require highly specialized skills. In such cases, implementing
+a salary cap could risk lowering the quality of services provided to the public.
+
+I believe this proposal is actionable. By capping overtime, we can not only 
+improve productivity but also reduce overall payroll expenses.
+
+```{r}
+overtime_replacement |>
+  select("fiscal_year", "agency_role", "avg_pay_rate", "total_ot_worked", "agency") |>
+  mutate(
+    is_full_time_needed = case_when(
+      total_ot_worked > 500 ~ "Yes",
+      TRUE ~ "No"
+    ),
+    est_savings = case_when(
+      is_full_time_needed == "Yes" ~ (total_ot_worked - 500) * avg_pay_rate * (1.5 - 1),
+      TRUE ~ 0 
+    )
+) |>
+  ungroup() |>
+  group_by(agency) |>
+  summarize(total_est_savings = sum(round(est_savings, 2))) |>
+  arrange(desc(total_est_savings)) |>
+  head(10) |>
+  gt() |>
+  tab_header(
+    title = md("Table 6. Financial Impact of Capping Overtime Hours")
+  ) |>
+  fmt_currency(
+    columns = total_est_savings,
+    currency = "USD"
+  ) |>
+  cols_label(
+    agency = "Agency",
+    total_est_savings = "Total Estimated Savings"
+  )
+```
+
 
 
 
