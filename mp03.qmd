@@ -1,0 +1,947 @@
+---
+title: "Soft Rock Playlist 🎸"
+output:
+  html: default
+  pdf: default
+code-fold: true
+toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+## Ultimate Playlist Nomination
+
+The **Soft Rock Playlist** opens with mellow, acoustic-rich songs like *The Scientist* 
+and *Photograph*, showing high acousticness and moderate energy. As we progress, 
+there's a noticeable rise in energy and valence—peaking with track like *Toxic*.
+However, the return to softer emotional tones in *Yellow* reflects a ‘rise and fall’ 
+pattern rather than a linear build-up—echoing the emotional arc of a live concert set.
+
+<iframe src="ultimate_playlist.html" width="100%" height="500px" style="border: none;"></iframe>
+
+## Design Principles 
+
+### Audio Features
+Related song were identified based on key musical characteristics shared by the 
+anchor songs **The Scientist** and **Viva La Vida** by *Coldplay*, such as matching 
+key and similar ranges of **tempo**, **acousticness** and **danceability**.
+
+### By Genre Identity
+Songs by the rock band: *U2* were selected due to their similar
+genre and sonic identity. Like *Coldplay*, *U2* is known for its atmospheric sound
+and emotional resonance, making them a natural stylistic match.
+
+### Spotlight on Hidden Gems
+In addition to well-known tracks with a popularity score of 79 or above, a few tracks
+with lower popularity score were included to add diversity and depth to the playlist.
+
+## Data Acquisition: `songs` dataset
+
+```{r}
+# Load Relevant Packages
+library(tidyverse)
+library(dbplyr)
+library(stringr)
+library(ggplot2)
+library(DT)
+library(scales)
+library(gt)
+library(rvest)
+library(purrr)
+library(httr)
+library(jsonlite)
+library(knitr)
+library(kableExtra)
+library(ggthemes)
+library(tidyr)
+library(stringr)
+
+# Task 1: function to load songs 
+load_songs <- function(url){
+  data_dir <- file.path("data", "mp03")
+  file_name <- file.path(data_dir, "spotify_data.csv")
+  
+  if(!dir.exists(data_dir)){
+    dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+  }
+  
+  if(!file.exists(file_name)){
+    download.file(url, destfile = file_name, method = "curl")
+  }
+  
+  # Read .csv file into R 
+  songs <- read_csv(file_name)
+  songs <- as.data.frame(songs)
+  
+  return(songs)
+}
+
+# Split the `artists` across multiple rows
+clean_artist_string <- function(x){
+    str_replace_all(x, "\\['", "") |> 
+        str_replace_all("'\\]", "") |>
+        str_replace_all("'", "")
+}
+
+# Call the function `load_songs` to acquire Spotify `songs` dataset
+url <- "https://raw.githubusercontent.com/gabminamedez/spotify-data/refs/heads/master/data.csv"
+songs <- load_songs(url)
+
+# Clean up the `artists` column 
+songs <- songs |> 
+  separate_longer_delim(artists, ",") |>
+  mutate(artist = clean_artist_string(artists)) |>
+  select(-artists)
+
+# Display the first 10 rows of `songs` data
+datatable(head(songs, 10), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+
+## Data Acquisition: `playlist` dataset
+
+```{r}
+# Load relevant packages
+library(httr)
+library(tibble)
+
+# Task 2: Write function to load Spotify million playlists 
+load_playlists <- function(base_url){
+  data_dir <- file.path("data", "mp03")
+  
+  if(!dir.exists(data_dir)){
+    dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+  }
+  
+  start_indices <- seq(0, 999000, by = 1000)
+  
+  # Create an empty list to store data frames of playlists 
+  playlists <- list()
+  
+  for (start in start_indices){
+    end <- start + 999
+    json_file_name <- sprintf("mpd.slice.%d-%d.json", start, end)
+    file_url <- paste0(base_url, json_file_name)
+    file_name <- file.path(data_dir, json_file_name)
+    
+    # First check if the JSON file already exists to handle duplicate download
+    if(!file.exists(file_name)){
+      response <- HEAD(file_url)
+      if(status_code(response) == 200){ 
+        download.file(file_url, destfile = file_name, method = "curl", quiet = TRUE) # Download only if the raw file exists on Github
+      }else{
+        next
+      }
+    }
+    
+    if(file.exists(file_name)){
+      json_data <- fromJSON(file_name)
+      if(! is.null(json_data$playlists)){            # It handles the missing playlists from JSON file or null playlists
+        playlists_df <- as_tibble(json_data$playlists)
+        playlists[[length(playlists) + 1]] <- playlists_df
+      }
+    }
+  }
+  
+  final_playlists <- bind_rows(playlists)
+  return(final_playlists)
+}
+
+
+# Call the function `load_playlists` to acquire Spotify million playlists
+base_url <- "https://raw.githubusercontent.com/DevinOgrady/spotify_million_playlist_dataset/main/data1/"
+playlists <- load_playlists(base_url)
+
+glimpse(playlists)
+```
+
+## Data Cleaning and Formatting
+
+```{r}
+# Select the desired columns
+playlists <- playlists |>
+  select(name, pid, num_followers, tracks)
+
+# Task 3: Expands the list-column "tracks" for each row
+playlists <- playlists |>
+  unnest(tracks)
+
+# Rename columns for readability and reorder the columns 
+playlists <- playlists |>
+  rename(
+    playlist_name = name,
+    playlist_id = pid,
+    playlist_followers = num_followers,
+    playlist_position = pos,
+    artist_id = artist_uri,
+    track_id = track_uri,
+    album_id = album_uri,
+    duration = duration_ms
+  ) |>
+  select(
+    playlist_name,
+    playlist_id,
+    playlist_position,
+    playlist_followers,
+    artist_name,
+    artist_id,
+    track_name,
+    track_id,
+    album_name,
+    album_id,
+    duration
+  )
+
+# Clean up the ID columns
+strip_spotify_prefix <- function(x){
+  library(stringr)
+  str_extract(x, ".*:.*:(.*)", group=1)
+}
+
+playlists <- playlists |>
+  mutate(across(c(artist_id, track_id, album_id), strip_spotify_prefix))
+
+# Display the first 10 rows of `playlists` data
+datatable(head(playlists, 10), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+
+## Initial Exploration
+
+```{r, include=FALSE}
+create_gt_table <- function(x){
+  # Rename columns 
+  colnames(x) <- colnames(x) |>
+    str_replace_all("_", " ") |>
+    str_to_title()
+  
+  # Bold these columns
+  bold_cols <- c("Playlist", "Track Name", "Name", "Playlist Name")
+  cols_to_bold <-intersect(names(x), bold_cols)
+  
+  # Identify text and numeric columns for alignment and number formatting below 
+  text_cols <- names(x)[map_lgl(x, ~ is.character(.x) || is.factor(.x))]
+  numeric_cols <- names(x)[map_lgl(x, is.numeric)]
+  
+  gt_table <- x |>
+    gt() |>
+    tab_options(
+      table.width = "100%"
+    ) |>
+    tab_style(
+      style = list(
+        cell_text(weight = "bold")
+      ),
+      locations = cells_column_labels(everything())
+    ) |>
+    tab_style(
+      style = cell_text(weight = "bold", color = "#264653"),
+      locations = cells_body(columns = all_of(cols_to_bold))
+    ) |>
+    cols_align(
+      align = "left",
+      columns = all_of(text_cols)
+    ) |>
+    cols_align(
+      align = "center",
+      columns = all_of(numeric_cols)
+    )
+  
+  return(gt_table)
+}
+```
+
+
+There are **1,200,590** distinct tracks and **173,604** distinct artists in 
+Spotify playlist dataset.
+
+```{r}
+# number of distinct tracks
+playlists |>
+  select(track_id) |>
+  n_distinct() 
+
+# number of distinct artists 
+playlists |>
+  select(artist_id) |>
+  n_distinct()
+```
+
+### The Top 5 Most Popular Tracks
+
+```{r}
+# Count the frequency of each track's appearance across playlists
+top_5 <- playlists |>
+  group_by(track_id) |>
+  summarize(
+    track_name = first(track_name),
+    artist_name = first(artist_name),
+    n_appearances = n()
+    ) |>
+  slice_max(n_appearances, n = 5)
+
+create_gt_table(top_5)
+```
+
+### Missing Tracks
+
+Among the top five most popular tracks, **One Dance** and **Broccoli (feat.Lil Yachty)**
+are the two tracks missing from the `songs` dataset. 
+
+```{r}
+missing_tracks <- anti_join(top_5, songs, by = c("track_id" = "id")) |> 
+  select(- n_appearances)
+  
+create_gt_table(missing_tracks)
+```
+
+### Most Danceable Track
+
+**Funky Cold Medina** is the most "danceable" track, with a danceability 
+score of 0.988, and it appears in 211 playlists. 
+
+```{r}
+# Find the most danceable track 
+most_danceable <- songs |>
+  select(name, id, danceability) |>
+  slice_max(danceability, n = 1)
+
+# Count the frequency of appearance in the playlists dataset
+most_danceable_playlist_count <- playlists |>
+  inner_join(most_danceable, by = c("track_id" = "id")) |>
+  count(track_id) |>
+  rename(playlist_count = n)
+
+most_danceable <- most_danceable |>
+  inner_join(most_danceable_playlist_count, by = c("id" = "track_id"))
+
+create_gt_table(most_danceable)
+```
+
+
+### Playlist with the Longest Average Track Length
+
+The playlist **Mixes** has the longest average track length, with an average duration 
+of 64 minutes.
+
+```{r}
+longest_playlist <- playlists |>
+  group_by(playlist_id, playlist_name) |>
+  summarize(
+    avg_length = round(mean(duration, na.rm = TRUE)/60000, 2)
+  ) |>
+  ungroup() |>
+  slice_max(avg_length, n = 1)
+
+create_gt_table(longest_playlist)
+```
+
+### The Most Popular Playlist
+
+The most popular playlist on Spotify is **Breaking Bad** with 53,519 followers.
+
+```{r}
+most_popular_playlist <- playlists |>
+  select(playlist_name, playlist_id, playlist_followers) |>
+  distinct() |>
+  slice_max(playlist_followers, n = 1)
+
+create_gt_table(most_popular_playlist)
+```
+
+
+## Visually Identify Characteristics of Popular Songs
+
+### Define Popularity Benchmark
+
+```{r}
+# Inner join the two datasets: `playsists` and `songs_unique` 
+playlist_song_features <- playlists |>
+  inner_join(songs, by = c("track_id" = "id", "artist_name" = "artist"))
+
+# I chose the song "Viva La Vida" by Coldplay.  
+# It has a popularity score of 79.
+
+popular_songs <- playlist_song_features |>
+  filter(popularity >= 79) 
+```
+
+
+### Do Popular Songs Appear in More Playlists?
+
+From the scatter plot below, it seems there is no strong linear correlation 
+between the popularity of a song and the number of its playlist appearances.
+This is further supported by the correlation coefficient of 0.42, which indicates
+a weak linear relationship.
+
+```{r, message=FALSE}
+song_popularity <- playlist_song_features |>
+  select(track_id, playlist_id, popularity) |>
+  group_by(track_id) |>
+  summarize(playlist_freq = n(),
+            avg_popularity = mean(popularity, na.rm = TRUE)
+            )
+
+ggplot(song_popularity, aes(x = playlist_freq, y = avg_popularity)) +
+  geom_point(color = "#3A86FF") +
+  labs(title = "Track Popularity vs. Playlist Count",
+       x = "Number of Playlist Appearances",
+       y = "Popularity Value"
+       ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5)
+  )
+```
+
+```{r}
+cor(song_popularity$playlist_freq, song_popularity$avg_popularity)
+```
+
+### The Number of Most Popular Songs by Year
+
+The bar chart below displays the years when the most popular songs were released.
+The earliest year in which songs with a popularity value above 79 were released 
+in 1967.
+
+The number of popular songs doesn't vary much between year 1967 and year 2013. 
+However, we see a spike in year 2017, when the number of popular songs reached 
+approximately 150,000. 
+
+```{r}
+popular_songs |>
+  count(year) |>
+  ggplot(aes(x = factor(year), y = n/1000)) +
+  geom_col(fill = "#3A86FF") +
+  scale_fill_tableau(palette = "Tableau 20") +
+  labs(
+    title = "Number of Top Songs by Year",
+    x = "Release Year",
+    y = "Number of Popular Songs (in thousands)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5)
+  )
+```
+
+### Average Danceability of Most Popular Songs by Year
+
+The "dancebility" peaked in year 1982, with a value of 0.92.
+
+```{r}
+library(RColorBrewer)
+
+popular_songs |>
+  group_by(year) |>
+  summarize(avg_danceability = round(mean(danceability, na.rm = TRUE), 2)) |>
+  ggplot(aes(x = factor(year), y = avg_danceability, fill = factor(year))) +
+  geom_col(color = "grey", show.legend = FALSE) +  # Adding grey borders for clarity
+  geom_text(aes(label = avg_danceability), vjust = -0.3, size = 2.5) +  # Adding value labels above bars
+  scale_fill_manual(
+    values = rep(brewer.pal(12, "Set3")[5], n_distinct(popular_songs$year)) 
+  ) +
+  labs(
+    title = "Danceability Value of Most Popular Songs by Year",
+    x = "Year",
+    y = "Average Danceability"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),  # Adjusted year text for readability
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5)  # Center title
+  )
+
+```
+
+### The Most Represented Decade on User Playlist
+
+There appears to be a clear trend showing an increase in playlist count by decade.
+The 2010s saw the highest number of playlists created -more than double 
+the count from the 2000s. 
+
+```{r}
+library(glue)
+bar_chart <- function(value, color = "#3a86ff", height = "30px") {
+  glue("<span style='display: inline-block; height: {height}; width: {value}%; background-color: {color}; border-radius: 4px;'></span>")
+}
+
+playlist_count_by_decade <- popular_songs |>
+  mutate(
+    decade = (year %/% 10) * 10
+  ) |>
+  group_by(decade) |>
+  summarize(playlist_count = n_distinct(playlist_id))
+
+total_count <- sum(playlist_count_by_decade$playlist_count)
+
+playlist_count <- playlist_count_by_decade$playlist_count
+
+playlist_count_by_decade_with_bar <- playlist_count_by_decade |>
+  mutate(
+    percent = round(playlist_count/total_count * 100, 2),
+    bar = map(percent, ~gt::html(bar_chart(.x)))
+  ) |>
+  select(-percent)
+
+gt(playlist_count_by_decade_with_bar) |>
+  cols_label(
+    decade = "Decade",
+    playlist_count = "Number of Playlists Created",
+    bar = "Percent"
+  ) |>
+  fmt_number(
+    columns = playlist_count,
+    sep_mark = ",",
+    decimals = 0
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c("decade", "playlist_count")
+  ) |>
+  cols_align(
+    align = "left",
+    columns = bar
+  ) |>
+  tab_options(
+    table.width = "100%"
+  ) |>
+  tab_style(
+    style = cell_text(color = "black", weight = "bold"),
+    locations = list(
+      cells_column_labels(everything())
+    )
+  )
+```
+
+### Polar Plot of Key Frequency
+
+As shown in the plot,  the majority of songs are in key 1 and mode 0.
+
+```{r}
+key_frequency <- popular_songs |>
+  select(track_id, mode, key) |>
+  group_by(mode, key) |>
+  summarise(key_freq = n())
+
+ggplot(key_frequency, aes(x=factor(key), y = key_freq, fill = factor(mode)))+
+  geom_bar(stat = "identity", position = "stack", width = 1) +
+  coord_polar(start = 0) +
+  scale_fill_manual(
+    values = c("0" = "#43a2ca", "1" = "#a8ddb5"),
+    name = "Mode"
+  ) +
+  labs(
+    title = "Song Frequency by Musical Key and Mode",
+    x = "Musical Key (0 = C, 1 = C♯/D♭, ..., 11 = B)",
+    y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    panel.grid = element_blank(),
+    axis.text.x = element_text(size = 10),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+```
+
+### The Most Popular Track Length
+
+The majority of the popular songs have track lengths in the range of 3 and 4.5 minutes.
+
+```{r}
+popular_songs |>
+  mutate(duration_in_min = round(duration / 60000, 2)) |>
+  ggplot(aes(x = duration_in_min)) +
+  geom_histogram(binwidth = 0.5, fill = "#3a86ff", color = "white") +
+  labs(
+    title = "Distribution of Popular Track Length (in Minutes)",
+    x = "Duration (Minutes)",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5)
+  )
+```
+
+### Track Lengths of the Top 20 Most Frequently Included Popular Songs
+
+```{r, message=FALSE}
+# Find the most included tracks by counting the number of distinct playlists 
+the_most_included_songs <- popular_songs |>
+  group_by(track_id, track_name) |>
+  summarize(
+    n_playlist = n_distinct(playlist_id),
+    avg_length = round(mean(duration, na.rm = TRUE)/60000, 2) # Convert the duration from ms to minutes
+  ) |>
+  ungroup() |>
+  slice_max(n_playlist, n = 20)
+
+the_most_included_songs |>
+ggplot(aes(x = reorder(track_name, -n_playlist), y = avg_length, fill = track_name)) +
+  geom_col() +
+  scale_fill_tableau(palette = "Tableau 20") +
+  labs(
+    title = "Track Length of the Top 20 Most Frequently Included Tracks",
+    x = "Track Name",
+    y = "Track Length (in minutes)"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(face = "bold")) 
+```
+
+### Coldplay's Popular Songs
+
+There are four songs by Coldplay with a popularity score of 79 or higher. *The Scientist*
+is included in the most playlists, followed by *Viva La Vida*, *Fix You* and *Yellow*.
+Again, we can see there is no direct relationship between the number of playlist 
+appearance and the popularity value.
+
+```{r}
+# Count the number of playlists in which each of Coldplay's popular song is included
+coldplay <- popular_songs|>
+  filter(artist_name == "Coldplay") |>
+  group_by(track_name) |>
+  summarize(
+    n_playlists = n_distinct(playlist_id),
+    popularity = mean(popularity, na.rm = TRUE))
+
+# Add a new column to display bars based on popularity values
+coldplay <-coldplay |>
+  mutate(
+    bar = map(popularity, ~gt::html(bar_chart(.x)))
+  ) |>
+  select(-popularity)
+
+# Visualize the data using gt
+gt(coldplay) |>
+  cols_label(
+    track_name = "Track Name",
+    n_playlists = "Number of Playlists ",
+    bar = "Popularity"
+  ) |>
+  fmt_number(
+    columns = n_playlists,
+    sep_mark = ",",
+    decimals = 0
+  ) |>
+  cols_align(
+    align = "center",
+    columns = c("track_name", "n_playlists")
+  ) |>
+  cols_align(
+    align = "left",
+    columns = bar
+  ) |>
+  tab_options(
+    table.width = "90%"
+  ) |>
+  tab_style(
+    style = cell_text(color = "black", weight = "bold"),
+    locations = list(
+      cells_column_labels(everything())
+    )
+  )
+```
+
+
+### The Distribution of `popularity` for Popular Songs by Decade
+
+The distribution of `popularity` is almost even by decade, oscillating in the 
+range of 79 to 82. Only in 2010's are there two songs with values above 90. 
+
+```{r}
+library(RColorBrewer)
+
+popular_songs |>
+  mutate(
+    decade = (year %/% 10) * 10
+  ) |>
+  group_by(decade) |>
+  ggplot(aes(x = factor(decade), y = popularity, fill = factor(decade))) +
+  geom_boxplot() +
+  scale_fill_brewer(palette = "Set3") +
+  labs(
+    title = "Popularity Distribution by Decade",
+    x = "Decade",
+    y = "Popularity"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5)
+    ) 
+```
+
+## Building a Playlist from Anchor Songs
+
+```{r, echo=FALSE}
+# Select desired columns
+data_formatting <- function(x) {
+  x <- x |>
+    select(artist_name, track_name, popularity, duration,
+           year, acousticness, danceability, energy, instrumentalness, liveness,
+           loudness, speechiness, tempo, valence, mode, key, explicit
+           ) |>
+    arrange(desc(popularity))
+  
+  return(x)
+}
+
+create_datatable <- function(x){
+  datatable(x, options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+}
+```
+
+### Anchor Songs and Their Features
+
+My two anchor songs are: **The Scientist** and **Viva La vida** by *Coldplay*.
+The table below shows their features, which will be used to find candidate songs 
+to include in the ultimate playlist.
+
+```{r}
+# Chose anchor songs 
+anchor_songs <- playlist_song_features |>
+  filter(track_name %in% c("The Scientist", "Viva La Vida") & popularity >= 79) |>
+  distinct(track_name, .keep_all = TRUE)
+
+anchor_songs <- data_formatting(anchor_songs)
+create_datatable(anchor_songs)
+```
+
+### Most Common Songs in Playlists with Anchor Songs
+
+To find the most common songs that appear in playlists containing the anchor songs,
+I first identify the distinct playlists where anchor songs appear.
+Then, I count how often each song appears in those playlists and select the top 
+20 most common ones.
+
+```{r}
+# First, find the list of distinct playlists where anchor songs appear
+anchor_song_playlist <- playlist_song_features |>
+  filter(track_id %in% c("75JFxkI2RXiU7L9VXzMkle", "1mea3bSkSGXuIRvnydlB5b")) |> 
+  select(playlist_name, playlist_id) |>
+  distinct()
+
+# Find the songs appear in the playlists above by inner_join the two datasets by "playlist_id"
+top20_common_songs <- playlist_song_features |>
+  inner_join(anchor_song_playlist, by = "playlist_id") |> 
+  group_by(track_id) |>
+  summarize(
+    track_name = first(track_name),
+    freq = n_distinct(playlist_id)     # Count the number of playlist appearances for each track_id
+  ) |>
+  ungroup() |>
+  filter(! track_name %in% c("The Scientist", "Viva La Vida") ) |>
+  slice_max(freq, n = 20)
+
+# Select the top 20 common songs
+top20_common_songs <- playlist_song_features |>
+  inner_join(top20_common_songs, by = "track_id") |>
+  rename(
+    track_name = track_name.x
+  ) |>
+  select(-track_name.y, -freq) |>
+  distinct(track_id, .keep_all = TRUE)
+
+top20_common_songs <- data_formatting(top20_common_songs)
+create_datatable(top20_common_songs)
+```
+
+### Tracks with Matching Key and in Similar Tempo Range
+
+There are 348 songs that share the same key as the anchor songs, with tempo ranging 
+from 138 to 146 BPM. I filtered the top 10 based on the popularity score.
+
+```{r}
+top10_songs_in_same_key <- playlist_song_features|>
+  filter(key == 5, tempo >= 138 & tempo <= 146, 
+         ! track_name %in% c("The Scientist", "Viva La Vida")) |>
+  distinct(track_name, .keep_all = TRUE) |>
+  arrange(desc(popularity)) |>
+  slice_head(n = 10)
+
+top10_songs_in_same_key <- data_formatting(top10_songs_in_same_key)
+create_datatable(top10_songs_in_same_key)
+```
+
+
+### Other Songs by Coldplay
+
+```{r}
+other_songs_by_coldplay <- playlist_song_features|>
+  filter(artist_name == "Coldplay",! name %in% c("The Scientist", "Viva La Vida")) |>
+  distinct(track_id, .keep_all = TRUE)
+
+other_songs_by_coldplay <- data_formatting(other_songs_by_coldplay)
+create_datatable(other_songs_by_coldplay)
+```
+
+### Songs Released in the Same Years as Anchors
+
+There are 11 songs released in the same years as the two anchor songs, filtered 
+based on two specific musical characteristics: acousticness and danceability.
+
+```{r}
+# The anchor songs were released in 2002 and 2008 respectively
+songs_released_same_year <- playlist_song_features |>
+  filter(year %in% c(2002, 2008),
+         acousticness >= 0.7 & acousticness <= 0.75,
+         danceability >= 0.46 & danceability <= 0.58,
+         ! track_name %in% c("The Scientist", "Viva La Vida")
+         ) |>
+  distinct(track_id, .keep_all = TRUE)
+
+songs_released_same_year <- data_formatting(songs_released_same_year)
+create_datatable(songs_released_same_year)
+```
+
+### Songs by Another Artist with a Similar Genre
+
+```{r}
+songs_by_U2 <- playlist_song_features |>
+  filter(artist_name == "U2") |>
+  distinct(track_name, .keep_all = TRUE)
+
+songs_by_U2 <- data_formatting(songs_by_U2)
+create_datatable(songs_by_U2)
+```
+
+### Candidates for the Ultimate Playlist
+
+```{r}
+candidate_songs <- bind_rows(top20_common_songs, top10_songs_in_same_key, 
+                             other_songs_by_coldplay, songs_released_same_year,
+                             anchor_songs)
+create_datatable(candidate_songs)
+```
+
+
+## Create the Ultimate Playlist
+
+Using the principles outlined at the beginning, the ultimate playlist 
+- **Soft Rock Playlist** was produced.
+
+- **Acousticness**: *Dream* and *The Scientist* lean acoustic, adding softness 
+  and emotional intimacy.
+- **Energy**: Broad range from mellow (*Dream*, 0.248) to high-energy like *Toxic* 
+  (0.838). This contrast supports dynamic flow within the playlist-rising and falling
+  emotional and sonic intensity.
+- **Tempo**: The playlist moves from slower to more upbeat tracks, creating a 
+  range of moods.
+- **Valence**: The playlist rises and falls emotionally, starting withe reflective,
+  low-valence songs and transitionning toward brighter, more energetic tracks.
+
+```{r}
+# the least popular songs from `top20_common_songs`
+ultimate_playlist <- top20_common_songs |> tail(2)
+
+# Select the first two songs from the rest of the candidate song data frames below
+list_of_candidate_song_dataframes <- list(anchor_songs, 
+                                          top10_songs_in_same_key, 
+                                          other_songs_by_coldplay, 
+                                          songs_released_same_year, 
+                                          songs_by_U2
+                                          )
+
+to_add <-  list_of_candidate_song_dataframes |>
+  lapply(head, 2) |>
+  bind_rows()
+
+# Final ultimate playlist
+ultimate_playlist <- ultimate_playlist |>
+  bind_rows(to_add)
+
+# Reorder by the columns by `acousticness`
+ultimate_playlist <- ultimate_playlist |>
+  arrange(desc(acousticness))
+```
+
+```{r}
+ggplot(ultimate_playlist, aes(x = fct_reorder(track_name, acousticness, .desc = TRUE),  
+                              y = acousticness, group = 1)) +
+  geom_line(color = "#3a86ff", size = 1) +  
+  geom_point(color = "#4895ef", size = 2) + 
+  labs(
+    title = "Acoustic Levels in the Soft Rock Playlist",
+    x = "Track Name (Ordered by Acousticness)",
+    y = "Acousticness Value"
+  ) +
+  theme_minimal() +  # Minimal theme for cleaner visuals
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),  # Rotate x-axis text for readability
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5)  # Center and bold the title
+  )
+
+```
+
+
+
+```{r}
+ggplot(ultimate_playlist, aes(x = fct_reorder(track_name, acousticness, .desc = TRUE),  
+                              y = energy, group = 1)) +
+  geom_line(color = "#ffd60a", size = 1) +
+  geom_point(color = "#ffb703", size = 2) +  
+  labs(
+    title = "Energy Levels in the Soft Rock Playlist",
+    x = "Track Name (Ordered by Acousticness)",  
+    y = "Energy Value"
+  ) +
+  theme_minimal() +  # Minimal theme for cleaner visuals
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),  # Rotate x-axis text for readability
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5)  # Center and bold the title
+  )
+```
+
+
+```{r}
+ggplot(ultimate_playlist, aes(x = fct_reorder(track_name, acousticness, .desc = TRUE),  
+                              y = valence, group = 1)) +
+  geom_line(color = "#8338ec", size = 1) +  
+  geom_point(color = "#7209b7", size = 2) +  
+  labs(
+    title = " Valence Levels in the Soft Rock Playlist",
+    x = "Track Name (Ordered by Acousticness)", 
+    y = "Valence Value"
+  ) +
+  theme_minimal() +  # Minimal theme for cleaner visuals
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),  # Rotate x-axis text for readability
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5)  # Center and bold the title
+  )
+```
+
+
+```{r}
+ggplot(ultimate_playlist, aes(x = fct_reorder(track_name, acousticness, .desc = TRUE),  
+                              y = tempo, group = 1)) +
+  geom_line(color = "#ff0054", size = 1) +  
+  geom_point(color = "#e5383b", size = 2) +  
+  labs(
+    title = " Tempo Levels in the Soft Rock Playlist",
+    x = "Track Name (Ordered by Acousticness)", 
+    y = "Tempo Value"
+  ) +
+  theme_minimal() +  # Minimal theme for cleaner visuals
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),  # Rotate x-axis text for readability
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5)  # Center and bold the title
+  )
+```
+
+
+
+
