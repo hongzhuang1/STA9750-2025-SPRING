@@ -1,0 +1,994 @@
+---
+title: "Exploring Recent US Political Shifts"
+output:
+  html: default
+  pdf: default
+code-fold: true
+toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+In this project, we are tasked to extract county-level election results
+for both 2020 and 2024 from Wikipedia pages. Using this data, we analyzed recent
+political shifts in the United States. Below are some initial findings: 
+
+- **County with the Most Votes for Trump:**
+  In 2024, Los Angeles County cast the highest number of votes for Trump, 
+  totaling 1,189,862.
+  
+- **County with the Highest Vote Share for Biden:**
+  In 2020, Biden received the highest percentage of votes in Kalawao County, Hawaii, 
+  with 95.83%.
+  
+- **County with the Largest Shift Towards Trump:**
+  In Maverick, Texas, Trump gained a 14.13 percentage points compared to 2020-rising
+  from 4.84% in 2020 to 58.97% in 2024.
+  
+- **County with the Largest Shift Away from Trump:**
+  In Henry County, Georgia, Mr.Trump saw a decline of 4.57 percentage points in his
+  votes share from 2020 to 2024.
+
+- **Largest County by Area:**
+  San Bernardino in California is the largest county by area, spanning 52,079.66 
+  square kilometers.
+  
+- **County with the Highest Voter Density:**
+  In 2020, New York County recorded the highest voter density, with 8,505 votes 
+  per square kilometer.
+  
+- **County with the Largest Increase in Voter Turnout:**
+  Loving County, Texas, experienced the largest increase in voter turnout in 2024,
+  rising by 46.97%.
+
+# Data Acquisiton
+
+## Task 1: Download US County Shapefile 
+
+```{r, warning=FALSE}
+# Load Relevant Packages
+library(tidyverse)
+library(dbplyr)
+library(stringr)
+library(ggplot2)
+library(DT)
+library(scales)
+library(gt)
+library(rvest)
+library(purrr)
+library(httr)
+library(knitr)
+library(kableExtra)
+library(ggthemes)
+library(tidyr)
+library(sf)
+library(base)
+```
+
+```{r}
+# Task 1: US County Shapefile
+
+url <- "https://www2.census.gov/geo/tiger/GENZ2023/shp/cb_2023_us_county_500k.zip"
+
+data_dir <- file.path("data", "mp04")
+file_name <- file.path(data_dir, "cb_2023_us_county_500k.zip")
+
+# Create the required directory if it doesn't exist 
+if(!dir.exists(data_dir)){
+  dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+}
+
+# Download the file only when it doesn't exist 
+if(!file.exists(file_name)){
+  download.file(url, destfile = file_name, method = "curl")
+}
+
+# Decompress the file 
+unzip(file_name, exdir = data_dir)
+```
+
+## Task 2: Extract Election Results 2024 
+
+### Methodology 
+
+Before extracting the by-county election results, we wrote a function to determine
+whether all states use the same term-"county"-to report their results. We found 
+three states use different term: Louisiana uses the term "parish", 
+Alasksa reports results by party rather than geography, and Virginia uses county/city. 
+Washington must be specified as "Washington_(state)" to access its state-level page.
+
+Unlike in 2020-when some state results on Wikipedia provided more detailed data, 
+including specific minor other parties such as Independent, Constitution, and 
+Green-the 2024 results are more concise, focusing on the main parties and grouping 
+all other votes under "Other Parties". To accommodate this, the function used 
+for extracting 2024 results was modified accordingly. The extracted 2020 results 
+are at a more granular level, containing vote counts for several minor parties.
+
+There are a total of 3,113 counties. 
+
+### Determine which state(s) do not use the term "county" to report election results
+
+```{r}
+has_by_county <- function(state){
+  state_formatted <- str_replace(state, " ", "_") 
+  
+  url <- paste0("https://en.wikipedia.org/wiki/2024_United_States_presidential_election_in_", state_formatted)
+  page <- read_html(url)
+  
+  count <- page |>
+    html_nodes("[id='By_county']") |>
+    length()
+  
+  return (count)
+}
+
+if_has_by_county <- map(state.name, has_by_county) |> unlist()
+
+# These states use a different term 
+check_term <- tibble(state.name, if_has_by_county)
+
+states_w_county_term <- check_term |>
+  filter(if_has_by_county == 1) |>
+  select(state.name) |>
+  pull() |>
+  append(c("Virginia", "Washington_(state)", "Louisiana"))
+```
+
+### Extract 2024 County-Level Election Results
+
+The table below shows the first 100 rows of the 2024 county-level election
+results.
+
+```{r}
+library(httr2)
+library(rvest)
+library(dbplyr)
+library(stringr)
+library(purrr)
+
+# Task 2
+extract_election_results_2024 <- function(state){
+  state_formatted <- str_replace(state, " ", "_") 
+  
+  data_dir <- file.path("data", "mp04")
+  file_name <- file.path(data_dir, paste0("2024_", state_formatted))  # Election year
+  
+  if(!dir.exists(data_dir)){
+    dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
+  }
+  
+  if(!file.exists(file_name)){
+    BASE_URL <- "https://en.wikipedia.org"
+    REQUEST <- request(BASE_URL) |>
+      req_url_path("wiki", paste0("2024_United_States_presidential_election_in_", state_formatted))
+    
+    RESPONSE <- req_perform(REQUEST)
+    
+    resp_check_status(RESPONSE)
+    
+    writeLines(resp_body_string(RESPONSE), file_name)
+  }
+  
+  # Extract all the tables 
+  TABLES <- read_html(file_name) |> 
+    html_elements("table") |>    
+    map(html_table)         
+  
+  # Find the table(s) with column name that contains "County" or "Parish" (Louisiana)
+  target_tables <- TABLES[map_lgl(TABLES, ~ any(str_detect(colnames(.x), regex("County|Parish", ignore_case = TRUE))))]
+  
+  # Get the desired table
+  target_table <- target_tables[[length(target_tables)]]
+  
+  # Append suffix to column names
+  suffixes <- c("", "_#", "_%", "_#", "_%", "_#", "_%", "_#", "_%", "")
+                
+  colnames(target_table) <- paste0(colnames(target_table), suffixes)
+  
+  # Clean column names 
+  colnames(target_table) <- str_replace_all(
+    colnames(target_table),
+    "(?<=[a-z])(?=[A-Z])", " "
+  ) |>
+    str_replace_all(" ", "_") |>
+    str_to_lower()
+  
+  # Rename column names
+  target_table <- target_table |>
+  rename_with(.fn = ~ case_when(
+    str_detect(., regex("county|parish", ignore_case = TRUE)) ~ "county",
+    str_detect(., regex("(?=.*Harris)(?=.*#)", ignore_case = TRUE)) ~ "harris_#",
+    str_detect(., regex("(?=.*Harris)(?=.*%)", ignore_case = TRUE)) ~ "harris_%",
+    str_detect(., regex("(?=.*Trump)(?=.*#)", ignore_case = TRUE)) ~ "trump_#",
+    str_detect(., regex("(?=.*Trump)(?=.*%)", ignore_case = TRUE)) ~ "trump_%",
+    str_detect(., regex("other", ignore_case = TRUE)) ~ str_extract(., "other.*"),
+    str_detect(., regex("total", ignore_case = TRUE)) ~ "total",
+    TRUE ~ .
+  ))
+  
+  # Remove the header sort
+  target_table <- target_table[!apply(target_table, 1, function(row){
+    any(str_detect(row, "\\#"))
+  }), ]
+  
+  # Define a function to clean column format
+  clean_numeric_column <- function(x){
+    x |>
+      str_replace_all(",", "") |>
+      str_replace_all("%", "") |>
+      str_replace_all("−", "-") |>
+      as.numeric()
+  }
+  
+  # Clean the numeric columns in the target table 
+  target_table <- target_table |>
+    mutate(
+      across(
+        .cols = 2:ncol(target_table),
+        .fns = clean_numeric_column
+      )
+    )
+  
+  # Definer a helper function to extract a specific column 
+  safe_pull <- function (df, column_name) {
+    if (column_name %in% colnames(df)) {
+      return (df[[column_name]])
+    } else {
+      return (0)
+    }
+  }
+  
+  data.frame(
+    state_name = state, 
+    county = safe_pull(target_table, "county"),
+    harris_votes = safe_pull(target_table, "harris_#"),
+    harris_percent = safe_pull(target_table, "harris_%"),
+    trump_votes = safe_pull(target_table, "trump_#"),
+    trump_percent = safe_pull(target_table, "trump_%"),
+    other_parties_votes = safe_pull(target_table,"other_parties_#"),
+    other_parties_percent = safe_pull(target_table,"other_parties_%"),
+    margin_by_number = safe_pull(target_table, "margin_#"),
+    margin_by_percent = safe_pull(target_table, "margin_%"),
+    total = safe_pull(target_table, "total")
+  )
+}
+
+
+# Extract and format the table for the exception: Alaska
+
+base_url <- "https://en.wikipedia.org"
+
+req <- request(base_url) |>
+  req_url_path("wiki", paste0("2024_United_States_presidential_election_in_", "Alaska"))
+
+response <- req_perform(req)
+
+resp_check_status(response)
+
+writeLines(resp_body_string(response), "Alaska")
+
+TABLES <- read_html("Alaska") |>
+  html_elements("table") |>
+  map(html_table)
+  
+target_tables <- TABLES[map_lgl(TABLES, ~ any(str_detect(colnames(.x), regex("Party", ignore_case = TRUE))))]
+
+target_table <- target_tables[[1]]
+
+# Remove the irrelevant column 
+target_table <- target_table[ , -1]
+
+# Rename columns 
+colnames(target_table) <- target_table[1, ] |> str_to_lower()
+target_table <- target_table[-1, ]
+
+target_table <- target_table |>
+  mutate(
+    party = case_when(
+      str_detect(party, regex("republican|democratic|total", ignore_case = TRUE)) ~ party,
+      TRUE ~ "Other_Parties"
+    ),
+    votes = as.numeric(str_replace_all(votes, ",", "")),
+    `%` = as.numeric(str_replace_all(`%`, "%", ""))
+  ) |>
+  select(-candidate, - `±%`) |>
+  group_by(party) |>
+  summarize(n_votes = sum(votes), vote_percent = sum(`%`)) 
+ 
+
+alaska_2024 <- target_table |>
+   pivot_wider(
+     names_from = party,
+     values_from = c(n_votes, vote_percent)) |>
+   rename(
+     harris_votes = n_votes_Democratic,
+     harris_percent = vote_percent_Democratic,
+     trump_votes = n_votes_Republican,
+     trump_percent = vote_percent_Republican,
+     other_parties_votes = n_votes_Other_Parties,
+     other_parties_percent = vote_percent_Other_Parties,
+     total = `n_votes_Total votes`
+   ) |>
+   mutate(
+     state_name = "Alaska",
+     county = "",
+     margin_by_number = trump_votes - harris_votes,
+     margin_by_percent = trump_percent - harris_percent,
+   ) |>
+   select(
+     state_name,
+     county,
+     harris_votes,
+     harris_percent,
+     trump_votes,
+     trump_percent,
+     other_parties_votes,
+     other_parties_percent,
+     margin_by_number,
+     margin_by_percent,
+     total
+   )
+```
+
+```{r}
+election_results_2024 <- map(states_w_county_term, extract_election_results_2024) |> bind_rows()
+
+election_results_2024 <- bind_rows(election_results_2024, alaska_2024)
+
+election_results_2024 <- election_results_2024 |>
+  filter(! str_detect(county, regex("^totals", ignore_case = TRUE)))
+
+# Display the first 100 rows of `election_results_2024` data
+datatable(head(election_results_2024, 100), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+## Task 3: Extract 2020 Election Results
+
+The first 100 records of the 2020 county-level election data extracted from Wikipedia
+are presented below.
+
+```{r}
+library(httr2)
+library(rvest)
+library(dbplyr)
+library(stringr)
+library(purrr)
+
+extract_election_results_2020 <- function(state){
+  state_formatted <- str_replace(state, " ", "_") 
+  
+  data_dir <- file.path("data", "mp04")
+  file_name <- file.path(data_dir, paste0("2020_", state_formatted))  # Election year 2020
+  
+  if(!dir.exists(data_dir)){
+    dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
+  }
+  
+  if(!file.exists(file_name)){
+    BASE_URL <- "https://en.wikipedia.org"
+    REQUEST <- request(BASE_URL) |>
+      req_url_path("wiki", paste0("2020_United_States_presidential_election_in_", state_formatted))
+    
+  RESPONSE <- req_perform(REQUEST)
+  
+  resp_check_status(RESPONSE)
+  
+  writeLines(resp_body_string(RESPONSE), file_name)
+  }
+  
+  # Extract all the tables 
+  TABLES <- read_html(file_name) |> 
+    html_elements("table") |>    
+    map(html_table)         
+  
+  # Find the table(s) with column name that contains "County" or "Parish" (Louisiana)
+  target_tables <- TABLES[map_lgl(TABLES, ~ str_detect(colnames(.x)[1], regex("^(county|parish)(/city)?(\\[\\d+\\])?$", ignore_case = TRUE)))] 
+ 
+  # Get the desired table 
+  if (length(target_tables) > 1){
+    matches <- keep(target_tables, ~ ncol(.x) == 10)
+    target_table <- if (length(matches) >= 1) matches[[1]] else target_tables[[1]]
+  } else {
+    target_table <- target_tables[[1]]
+  }  
+  
+  colnames(target_table) <- colnames(target_table) |>
+    str_remove("\\[\\d+\\]") |>
+    str_replace_all("(?<=[a-z])(?=[A-Z])", " ") |>
+    str_replace_all(" ", "_") |>
+    str_to_lower()
+  
+  # Add suffixes to column names 
+  n_col <- ncol(target_table)
+  
+  suffixes <- target_table[1, ][2: (n_col - 1)]
+  
+  colnames(target_table)[2:(n_col - 1)] <- paste0(colnames(target_table)[2: (n_col - 1)], "_", suffixes)
+  
+  # Remove the row with header sort
+  target_table <- target_table[!apply(target_table, 1, function(row){
+    any(str_detect(row, "\\#"))
+  }), ]
+  
+  # Rename column names
+  target_table <- target_table |>
+  rename_with(.fn = ~ case_when(
+    str_detect(., regex("county|parish", ignore_case = TRUE)) ~ "county",
+    str_detect(., regex("(?=.*Biden)(?=.*#)", ignore_case = TRUE)) ~ "biden_#",
+    str_detect(., regex("(?=.*Biden)(?=.*%)", ignore_case = TRUE)) ~ "biden_%",
+    str_detect(., regex("(?=.*Trump)(?=.*#)", ignore_case = TRUE)) ~ "trump_#",
+    str_detect(., regex("(?=.*Trump)(?=.*%)", ignore_case = TRUE)) ~ "trump_%",
+    str_detect(., regex("(?=.*Libertarian)(?=.*#)", ignore_case = TRUE)) ~ "libertarian_#",
+    str_detect(., regex("(?=.*Libertarian)(?=.*%)", ignore_case = TRUE)) ~ "libertarian_%",
+    str_detect(., regex("(?=.*Independent)(?=.*#)", ignore_case = TRUE)) ~ "independent_#",
+    str_detect(., regex("(?=.*Independent)(?=.*%)", ignore_case = TRUE)) ~ "independent_%",
+    str_detect(., regex("(?=.*Constitution)(?=.*#)", ignore_case = TRUE)) ~ "constitution_#",
+    str_detect(., regex("(?=.*Constitution)(?=.*%)", ignore_case = TRUE)) ~ "constitution_%",
+    str_detect(., regex("(?=.*green)(?=.*#)", ignore_case = TRUE)) ~ "green_#",
+    str_detect(., regex("(?=.*green)(?=.*%)", ignore_case = TRUE)) ~ "green_%",
+    str_detect(., regex("other", ignore_case = TRUE)) ~ str_extract(., "other.*"),
+    str_detect(., regex("total", ignore_case = TRUE)) ~ "total",
+    TRUE ~ .
+  ))
+  
+ # Define a function to clean column format
+  clean_numeric_column <- function(x){
+    x |>
+      str_replace_all(",", "") |>
+      str_replace_all("%", "") |>
+      str_replace_all("−", "-") |>
+      as.numeric()
+  }
+
+  target_table <- target_table |>
+    mutate(
+      across(
+        .cols = 2:ncol(target_table),
+        .fns = clean_numeric_column
+      )
+    )
+  
+  # Definer a helper function to extract a specific column 
+  safe_pull <- function (df, column_name) {
+    if (column_name %in% colnames(df)) {
+      return (df[[column_name]])
+    } else {
+      return (0)
+    }
+  }
+  
+  data.frame(
+    state_name = state, 
+    county = safe_pull(target_table, "county"),
+    biden_votes = safe_pull(target_table, "biden_#"),
+    biden_percent = safe_pull(target_table, "biden_%"),
+    trump_votes = safe_pull(target_table, "trump_#"),
+    trump_percent = safe_pull(target_table, "trump_%"),
+    libertarian_votes = safe_pull(target_table, "libertarian_#"),
+    libertarian_percent = safe_pull(target_table, "libertarian_%"),
+    independent_votes = safe_pull(target_table, "independent_#"),
+    independent_percent = safe_pull(target_table, "independent_%"),
+    constitution_votes = safe_pull(target_table, "constitution_#"),
+    constitution_percent = safe_pull(target_table, "constitution_%"),
+    green_votes = safe_pull(target_table, "green_#"),
+    green_percent = safe_pull(target_table, "green_%"),
+    other_parties_votes = safe_pull(target_table,"other_parties_#"),
+    other_parties_percent = safe_pull(target_table,"other_parties_%"),
+    margin_by_number = safe_pull(target_table, "margin_#"),
+    margin_by_percent = safe_pull(target_table, "margin_%"),
+    total = safe_pull(target_table, "total")
+  )
+}
+
+
+# Extract and format table for the exception: "Alaska" 
+base_url <- "https://en.wikipedia.org"
+
+req <- request(base_url) |>
+  req_url_path("wiki", paste0("2020_United_States_presidential_election_in_", "Alaska"))
+
+response <- req_perform(req)
+
+resp_check_status(response)
+
+writeLines(resp_body_string(response), "Alaska")
+
+TABLES <- read_html("Alaska") |>
+  html_elements("table") |>
+  map(html_table)
+  
+target_tables <- TABLES[map_lgl(TABLES, ~ any(str_detect(colnames(.x), regex("Party", ignore_case = TRUE))))]
+
+target_table <- target_tables[[length(target_tables)]]
+
+# Remove the irrelevant column 
+target_table <- target_table[ , -1]
+
+# Rename columns 
+colnames(target_table) <- colnames(target_table) |> str_to_lower()
+
+target_table <- target_table |>
+  select(party, votes, `%`) |>
+  mutate(
+    party = case_when(
+      str_detect(party, regex("republican|democratic|libertarian|green|independent|constitution|total", ignore_case = TRUE)) ~ party,
+      TRUE ~ "Other_Parties"
+    ),
+    votes = as.numeric(str_replace_all(votes, ",", "")),
+    `%` = as.numeric(str_replace_all(`%`, "%", ""))
+  ) |>
+  group_by(party) |>
+  summarize(n_votes = sum(votes), vote_percent = sum(`%`))
+
+alaska_2020 <- target_table |>
+   pivot_wider(
+     names_from = party,
+     values_from = c(n_votes, vote_percent)) |>
+   rename(
+     biden_votes = n_votes_Democratic,
+     biden_percent = vote_percent_Democratic,
+     trump_votes = n_votes_Republican,
+     trump_percent = vote_percent_Republican,
+     libertarian_votes = n_votes_Libertarian,
+     libertarian_percent = vote_percent_Libertarian,
+     independent_votes = n_votes_Independent,
+     independent_percent = vote_percent_Independent,
+     constitution_votes = n_votes_Constitution,
+     constitution_percent = vote_percent_Constitution,
+     green_votes = n_votes_Green,
+     green_percent = vote_percent_Green,
+     other_parties_votes = n_votes_Other_Parties,
+     other_parties_percent = vote_percent_Other_Parties,
+     total = `n_votes_Total votes`
+   ) |>
+   mutate(
+     state_name = "Alaska",
+     county = "",
+     margin_by_number = trump_votes - biden_votes,
+     margin_by_percent = trump_percent - biden_percent
+   ) |>
+   select(
+     state_name, 
+     county,
+     biden_votes,
+     biden_percent,
+     trump_votes,
+     trump_percent,
+     libertarian_votes,
+     libertarian_percent,
+     independent_votes,
+     independent_percent,
+     constitution_votes,
+     constitution_percent,
+     green_votes,
+     green_percent,
+     other_parties_votes,
+     other_parties_percent,
+     margin_by_number,
+     margin_by_percent,
+     total
+   )
+
+```
+
+```{r}
+# Election results for states other than Alaska
+election_results_2020 <- map(states_w_county_term, extract_election_results_2020) |> bind_rows()
+
+election_results_2020 <- bind_rows(election_results_2020, alaska_2020)
+
+election_results_2020 <- election_results_2020 |>
+  filter(! str_detect(county, regex("^totals", ignore_case = TRUE)))
+
+datatable(head(election_results_2020, 100), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+# Initial Exploration
+
+### Combine Data Files 
+
+To perform some initial exploration of the election results, we combined the results
+from 2020 and 2024 with the county shapefile, which provides the county geometry 
+that we will use to demonstrate the shift for each county. 
+
+```{r}
+library(sf)
+# Read county shape file into R
+county_shapes <- st_read("~/STA9750/STA9750-2025-SPRING/data/mp04/cb_2023_us_county_500k.shp", quiet = TRUE)
+
+# Update the county name "Lac qui Parle" in Minnesota 
+election_results_2024 <- election_results_2024 |>
+  mutate(
+    county = case_when(
+      county == "Lac qui Parle" ~ "Lac Qui Parle",
+      TRUE ~ county
+    )
+  )
+
+# Combine election results by state and county: 2020 and 2024
+county_results_joined <- election_results_2020 |>
+  select(state_name, county, biden_votes, trump_votes, total, biden_percent, trump_percent) |>
+  rename(
+    trump_votes_2020 = trump_votes, 
+    total_by_county_2020 = total, 
+    trump_percent_2020 = trump_percent) |>
+  inner_join(
+    election_results_2024 |> 
+      select(state_name, county, harris_votes, trump_votes, total, harris_percent, trump_percent) |> 
+      rename(
+        trump_votes_2024 = trump_votes, 
+        total_by_county_2024 = total, 
+        trump_percent_2024 = trump_percent), 
+    by = c("state_name", "county")
+  ) |>
+  mutate(
+    state_name = case_when(
+      state_name == "Washington_(state)" ~ "Washington",
+      TRUE ~ state_name
+    )
+  )
+
+# Address some missing county geometry by county name mismatch 
+ct_counties <- st_read("~/downloads/tl_2020_us_county/tl_2020_us_county.shp", quiet = TRUE) |> filter(STATEFP == "09")
+
+name_mismatch_fixed <- county_results_joined |> filter(state_name == "Connecticut") |> 
+  left_join(ct_counties |> select(NAME, geometry), 
+            by = c("county" = "NAME"))
+
+other_results_joined <- county_results_joined |> 
+  filter(! state_name %in% "Connecticut") |> 
+  left_join(
+    county_shapes |> select(NAME, STATE_NAME, geometry),
+    by = c("county" = "NAME", "state_name" = "STATE_NAME") 
+  ) |>
+  distinct(state_name, county, .keep_all = TRUE)
+
+
+county_results_joined <- bind_rows(other_results_joined, name_mismatch_fixed) 
+
+datatable(head(county_results_joined, 100), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+### 1.Which county or counties cast the most votes for Trump in 2024?
+
+Trump received the most votes in Los Angeles, with a total of 1,189,862. 
+
+```{r}
+county_results_joined |>
+  select(state_name, county, trump_votes_2024) |>
+  slice_max(trump_votes_2024, n = 1) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Trump Votes 2024" = trump_votes_2024
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center; font-weight: bold; font-size: 20px',
+    'County with the Highest Trump Votes in 2024')
+  ) |>
+  formatRound(columns = "Trump Votes 2024", digits = 0, mark = ",")
+
+```
+
+### 2.Which county or counties cast the most votes for Biden (%) in 2020?
+
+Biden received the most votes in Kalawao County in Hawaii in 2020, with a fraction 
+of 95.83%
+
+```{r}
+county_results_joined |>
+  select(state_name, county, biden_votes, total_by_county_2020) |>
+  mutate(
+    fraction = round(biden_votes/total_by_county_2020, 4)
+  ) |>
+  slice_max(fraction, n = 1) |>
+  select(
+    state_name,
+    county,
+    fraction
+  ) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Vote Share" = fraction
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+    'County with the Highest Biden Vote Share in 2024')
+  ) |>
+  formatPercentage("Vote Share", digits = 2)
+  
+```
+
+### 3.Which county or counties had the largest shift towards Trump in 2024?
+
+```{r}
+county_results_joined |>
+  select(state_name, county, trump_percent_2020, trump_percent_2024) |>
+  mutate(
+    percentage_points = trump_percent_2024 - trump_percent_2020
+  ) |>
+  slice_max(percentage_points, n = 1) |>
+  select(
+    state_name,
+    county,
+    percentage_points
+  ) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Shify by Pts" = percentage_points
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+      'County with the Largest Shift in Trump’s Vote Share in 2024'
+    )
+  )
+```
+
+### 4.Which state had the largest shift towards Harris?
+
+```{r}
+county_results_joined |>
+  select(state_name, county, trump_percent_2020, trump_percent_2024) |>
+  mutate(
+    percentage_points = trump_percent_2024 - trump_percent_2020
+  ) |>
+  slice_min(percentage_points, n = 1) |>
+  select(
+    state_name,
+    county,
+    percentage_points
+  ) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Shift by Pts" = percentage_points
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+      'County with the Least Shift in Trump’s Vote Share in 2024'
+    )
+  )
+```
+
+### 5.What is the largest county, by area, in this data set?
+
+San Bernardino in California is the largest county by area, covering 52,079.66 
+square kilometers.
+
+```{r}
+# Create an `sf` object of the joined results by county
+county_results_sf <- st_as_sf(county_results_joined, crs = st_crs(county_shapes))
+
+county_results_sf <- county_results_sf |>
+  mutate(
+    area = round(as.numeric(st_area(geometry))/1000000, 2)
+  )
+
+county_results_sf |> 
+  st_drop_geometry() |> 
+  select(state_name, county, area) |>
+  slice_max(area, n = 1) |>
+  rename(
+    State = state_name,
+    County = county,
+    Area = area
+  ) |>
+  st_drop_geometry() |>
+  datatable(
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+      'Largest County by Area'
+    )
+  ) |>
+  formatRound("Area", mark = ",")
+```
+
+### 6.What county has the highest voter density in 2020?
+
+```{r}
+county_results_sf |>
+  select(state_name, county, total_by_county_2020, area) |>
+  mutate(
+    voter_density = round(total_by_county_2020/area, 0)
+  ) |>
+  st_drop_geometry() |>
+  filter(area > 0) |>           
+  slice_max(voter_density, n = 1) |>
+  select(
+    state_name,
+    county,
+    voter_density
+  ) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Voter Density" = voter_density
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+      'County with the Highest Voter Density in 2020'
+    )
+  ) |>
+  formatRound("Voter Density", digits = 0, mark = ",")
+```
+
+### 7.Which county had the largest increase in voter turnout in 2024?
+
+Loving County in Texas saw the largest increase in voter turnout in 2024, with
+a rise of 46.97%.
+
+```{r}
+county_results_joined |>
+  select(state_name, county, total_by_county_2020, total_by_county_2024) |>
+  mutate(
+    change_in_voter_turnout = round((
+      total_by_county_2024 - total_by_county_2020)/ total_by_county_2020, 4)
+  ) |>
+  slice_max(change_in_voter_turnout, n = 1) |>
+  select(
+    state_name,
+    county,
+    change_in_voter_turnout
+  ) |>
+  rename(
+    State = state_name,
+    County = county,
+    "Voter Turnout Change" = change_in_voter_turnout
+  ) |>
+  datatable(
+    caption = htmltools::tags$caption(
+      style = 'caption-side: top; text-align: center; font-weight: bold;font-size: 20px',
+      'County with the Largest Increase in Voter Turnout in 2024'
+    )
+  ) |>
+  formatPercentage("Voter Turnout Change", digits = 2)
+  
+```
+
+# Task 5: Map of Shift in Voting Margin (2020-2024)
+
+To produce the map showing the shift in margin from 2020 to 2024 based on the 
+extracted election results, we first calculated the margins for both 2020 and 2024. 
+Then, we computed the shift in percentage points for each county.
+
+We observed that in 2,790 counties, Trump improved his margin compared to his 
+2020 margin. This represents approximately 89% of all counties.  
+
+```{r}
+# Compute the shift for each county 
+shift_by_county <- county_results_joined |>
+  mutate(
+    margin_2020 = round(trump_percent_2020 - biden_percent, 4),
+    margin_2024 = round(trump_percent_2024 - harris_percent,4),
+    percentage_points = round(margin_2024 - margin_2020, 4)
+  ) |>
+  select(
+    state_name,
+    county,
+    margin_2020, 
+    margin_2024, 
+    percentage_points,
+    geometry
+  )
+
+datatable(head(shift_by_county, 100), options = 
+            list(scrollX = TRUE, scrollY = 300, paging = TRUE))
+```
+
+
+```{r}
+library(sf)
+# Read county shape file into R
+state_shapes <- st_read("~/STA9750/STA9750-2025-SPRING/data/mp04/cb_2023_us_state_500k.shp", quiet = TRUE)
+
+# State names
+states <- data.frame(state_name = state.name)
+
+# Obtain state geometry
+state_shapes <- state_shapes |>
+  inner_join(states, by = c("NAME" = "state_name"))
+
+# State geometry for all states but Alaska and Hawaii
+state_geom <- state_shapes |>
+  select(NAME, geometry) |>
+  rename(
+    state_name = NAME,
+    state_geometry = geometry
+  )
+
+# Create a sf object 
+shift_by_county_sf <- st_as_sf(shift_by_county, crs = st_crs(county_shapes))
+
+# Exclude Alaska and Hawaii
+shift_by_county_sf <- shift_by_county_sf |> filter(! state_name %in% c("Alaska", "Hawaii"))
+
+shift_by_county_sf <- shift_by_county_sf |>
+  mutate(
+    county_centroid = st_centroid(geometry), 
+    x = st_coordinates(county_centroid)[, 1],
+    y = st_coordinates(county_centroid)[, 2],
+    x_end = x + percentage_points * 0.05,    # 0.01 scale factor based on shift 
+    y_end = y,
+    arrow_color = ifelse(percentage_points > 0, "#CB454A", "#2E74C0")
+  )
+
+# Due to some missing geometry 
+shift_by_county_sf <- shift_by_county_sf |> filter(! is.na(x), ! is.na(y), ! is.na(x_end), ! is.na(y_end))
+
+# Create arrow geom (line string)
+arrow_geoms <- mapply(
+  function(x1, y1, x2, y2) st_linestring(matrix(c(x1, y1, x2, y2), ncol = 2, byrow = TRUE)),
+  shift_by_county_sf$x,
+  shift_by_county_sf$y,
+  shift_by_county_sf$x_end,
+  shift_by_county_sf$y_end,
+  SIMPLIFY = FALSE
+)
+
+shift_by_county_sf <- st_sf(
+  shift_by_county_sf |> select(-geometry),
+  arrow_geom = st_sfc(arrow_geoms, crs = st_crs(shift_by_county_sf)))
+
+
+# Create arrows sf for plot
+shift_arrows_sf <- shift_by_county_sf
+st_geometry(shift_arrows_sf) <- shift_arrows_sf$arrow_geom
+
+# county centroid sf 
+county_centroids_sf <- shift_by_county_sf
+st_geometry(county_centroids_sf) <- st_geometry(shift_by_county_sf$county_centroid)
+
+
+state_shapes <- state_shapes |> filter(! NAME %in% c("Alaska", "Hawaii"))
+
+library(tmap)
+
+tm_shape(state_shapes) +
+  tm_polygons(col = "gray90", border.col = "white") +
+
+  tm_shape(shift_arrows_sf) +
+  tm_lines(col = "arrow_color", lwd = 2) +
+  
+  tm_add_legend(type = "fill",
+                labels = c("More Rep.", "More Dem."),
+                col = c("#CB454A", "#2E74C0"),
+                title = "Shift Direction") +
+
+  tm_layout(main.title = "Shift in Margin from 2020 to 2024",
+            main.title.size = 2,
+            main.title.position = "center",
+            fontface = "bold",
+            legend.position = c("left", "bottom"),
+            legend.bg.color = "white",
+            legend.bg.alpha = 0.8,
+            legend.text.size = 0.6,
+            legend.title.size = 0.8,
+            frame = FALSE
+            )
+```
+
+
+
+
+
+
+
+
+
+
+
+
