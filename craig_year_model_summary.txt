@@ -1,0 +1,24 @@
+lm(formula = log(median_sale_price) ~ `Post Secondary Readiness` +
+    `Sale Year`, data = consolidated_school_district_lm)
+
+Residuals:
+      Min        1Q    Median        3Q       Max
+-0.054636 -0.015109 -0.003200  0.009915  0.096105
+
+Coefficients:
+                            Estimate Std. Error t value Pr(>|t|)
+(Intercept)                 2.461725   0.003003 819.867  < 2e-16 ***
+`Post Secondary Readiness`  0.145437   0.004792  30.349  < 2e-16 ***
+`Sale Year`2015            -0.006810   0.003185  -2.138  0.03288 *
+`Sale Year`2016            -0.007839   0.003159  -2.482  0.01332 *
+`Sale Year`2017            -0.009099   0.003193  -2.849  0.00451 **
+`Sale Year`2018            -0.005063   0.003212  -1.576  0.11544
+`Sale Year`2021             0.013957   0.003186   4.381 1.36e-05 ***
+`Sale Year`2022             0.019046   0.003187   5.976 3.67e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.02275 on 694 degrees of freedom
+  (284 observations deleted due to missingness)
+Multiple R-squared:  0.6198,	Adjusted R-squared:  0.6159
+F-statistic: 161.6 on 7 and 694 DF,  p-value: < 2.2e-16

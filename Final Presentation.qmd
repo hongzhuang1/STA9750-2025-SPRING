@@ -1,0 +1,70 @@
+---
+title: "Final Presentation"
+format: revealjs
+css: styles.css
+---
+
+## Does Distance to NYC Impact Real Estate Pricing in Connecticut?
+
+<div class="reveal section" style="font-size: 0.8em;"> 
+
+- Fairfield County, which enjoys the most extensive Metro-North coverage, 
+  has seen the highest average appreciation in single-family home values at 
+  $169,378 — more than double that of Middlesex and Litchfield, and over three 
+  times higher than counties like Hartford. 
+  
+- This disparity underscores how proximity to New York City and access 
+  to Metro-North rail service not only influences property value growth but also 
+  reflects underlying housing demand.
+
+</div>
+
+## 
+
+![](avg_appreciation_plot.png)
+
+## The Property Price Effect: Regional Bus Hubs vs. Rail Networks
+
+<div class="reveal section" style="font-size: 0.75em;">
+
+- [CTtransit Data](https://www.cttransit.com/about/developers) shows that Hartford 
+  has the highest number of bus stops among Connecticut towns, with 993 stops 
+  connecting to 69 other towns.
+
+- In contrast, New Haven offers direct access to the Metro-North rail line, with 
+  approximately 62.69% of its properties enjoying convenient proximity to the 
+  service-defined as a travel time of just 3 to 5 minutes by car to the nearest
+  station. 
+  
+- These contrasting transit dynamics are clearly mirrored in property values. Across 
+  multiple property types, New Haven consistently commands higher prices than 
+  Hartford: on average, single-family homes are 41.63% more expensive, 
+  three-family homes are 32.81% higher, and two-family homes command a 17.63% premium.
+  These patterns suggest that access to commuter rail significantly amplifies 
+  real estate demand and pricing power.
+
+</div>
+  
+##
+
+![](average_property_prices.png)
+
+
+
+## Model Performance & Future Work
+
+<div class="reveal section" style="font-size: 0.75em;">
+
+- The three predictors together explain 35% variation in real estate pricing in
+  Connecticut. Due to the limitations in obtaining accurate property types for 
+  the missing values and the imputation difficulty, the model performance would 
+  be improved if the two challenges are resolved.  
+
+```{r}
+model_summary <- readLines("model_summary.txt")
+cat(model_summary, sep = "\n")
+```
+
+</div>
+
+

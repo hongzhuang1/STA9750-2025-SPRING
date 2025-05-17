@@ -1,0 +1,22 @@
+Residuals:
+      Min        1Q    Median        3Q       Max
+-0.046440 -0.015203 -0.001756  0.008881  0.085693
+
+Coefficients:
+                                              Estimate Std. Error t value Pr(>|t|)
+(Intercept)                                   2.415665   0.021792 110.851  < 2e-16 ***
+FallOfYear2021                                0.016071   0.005326   3.017 0.002874 **
+FallOfYear2022                                0.018423   0.005252   3.508 0.000556 ***
+`Attendance / Chronic Absence`                0.053248   0.029663   1.795 0.074114 .
+`Post Secondary Readiness`                    0.104300   0.016051   6.498 6.11e-10 ***
+`Post Secondary Entrance`                     0.059280   0.023757   2.495 0.013380 *
+`Physical Fitness`                            0.027181   0.014578   1.865 0.063686 .
+`Growth Towards English Literacy`            -0.052719   0.021070  -2.502 0.013133 *
+`Growth Towards English Spoken Proficiency `  0.059041   0.023474   2.515 0.012670 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.02196 on 204 degrees of freedom
+  (773 observations deleted due to missingness)
+Multiple R-squared:  0.6016,	Adjusted R-squared:  0.586
+F-statistic: 38.51 on 8 and 204 DF,  p-value: < 2.2e-16
