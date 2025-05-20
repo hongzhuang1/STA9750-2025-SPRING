@@ -120,9 +120,9 @@ ct_towns <- st_read("~/downloads/tl_2020_09_cousub/tl_2020_09_cousub.shp",
 ```
 
 
-## Metro North
+## Metro-North Railroad
 
-The Metro North stations can be obtained here: [Metro-North Railroad](https://www.mta.info/developers)
+The Metro-North stations can be obtained here: [Metro-North Railroad](https://www.mta.info/developers)
 
 ```{r}
 stops <- read.delim("~/STA9750/STA9750-2025-SPRING/data/fp01/gtfsmnr/stops.txt", 
@@ -143,11 +143,11 @@ ct_ny_towns_geom <- bind_rows(ct_towns_geom, ny_towns_geom)
 
 stops <- stops |> select(stop_id, stop_name, stop_lon, stop_lat)
 
-# Create sf object of Metro North stops
+# Create sf object of Metro-North stops
 stops_sf <- st_as_sf(stops, coords = c("stop_lon", "stop_lat"), 
                      crs = st_crs(ct_towns))
 
-# Add the state and the town for each stop where it is located 
+# Add the state and the town for each station
 stops <- st_join(stops_sf, ct_ny_towns_geom, join = st_within) |> 
   mutate(
     lon = st_coordinates(geometry)[, 1],
@@ -172,8 +172,13 @@ stops <- st_join(stops_sf, ct_ny_towns_geom, join = st_within) |>
 stops_sf <- st_as_sf(stops, coords = c("stop_lon", "stop_lat"), 
                      crs = st_crs(ct_towns))
 
+# Select the first ten rows to display
+to_display <- stops |>
+  select(stop_id, stop_name, town, state, stop_lon, stop_lat) |>
+  head(10)
+
 # Display the first ten rows of the data set
-kable(head(stops, 10), caption = "First 10 Rows of Metro North Stations") |>
+kable(to_display, caption = "First 10 Rows of Metro-North Stations") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
@@ -194,7 +199,8 @@ CT transit data can be found: [CT Bus Data](https://www.cttransit.com/about/deve
 # trips <- read.delim("~/Downloads/googlect_transit/trips.txt", 
 #                     header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
-# # Combine these datasets to obtain trip-level bus data in Connecticut
+
+# # Combine these data sets to obtain trip-level bus data in Connecticut
 # bus_trip_stop_data <- stop_times |>
 #   left_join(bus_stops, by = "stop_id") |>
 #   left_join(trips, by = "trip_id") |>
@@ -217,10 +223,10 @@ CT transit data can be found: [CT Bus Data](https://www.cttransit.com/about/deve
 # Save the combined datasets
 # write.csv(bus_trip_stop_data, "bus_trip_stop_data.csv", row.names = FALSE)
 
-# Read Trip-level CTtransit data into R using 
+# Read the trip-level data into R
 bus_trip_stop_data <- read.csv("bus_trip_stop_data.csv")
 
-# Display the first ten rows of the data set
+# Display the first ten rows
 kable(head(bus_trip_stop_data, 10), caption = "First 10 Rows of CT Bus Trips") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
@@ -265,11 +271,11 @@ kable(head(ct_sales, 10), caption = "First 10 Rows of CT Sales") |>
 
 # Data Preprocessing 
 
-## Define the metric of proximity to NYC: using Grand Central as anchor point
+## Proximity to NYC: A Grand Central-Based Metric for Measuring Access to the City
 
 In this section, we first define the metric of proximity to NYC using 
-Grand Central Station as the anchor point. Then, we calculate the distance from 
-each property in `ct_sales` to it.
+Grand Central Terminal Station as the anchor point. Then, we calculate the 
+distance from each property in `ct_sales` to it.
 
 To calculate the distance, we address the following issues:
 
@@ -289,7 +295,7 @@ as a benchmark to assess whether the mapping of geographic coordinates and
 addresses is accurate.
 
 ```{r}
-# Mutate a column `street_name` column for `location` imputation
+# Mutate a variable called `street_name` for `location` imputation later
 ct_sales <- ct_sales |>
   mutate(
     street_name = str_remove(address, "^\\d+\\s+"),    
@@ -314,10 +320,20 @@ ct_sales <- ct_sales |>
       TRUE ~ str_extract(street_name, "(?<=\\s)[A-Za-z].*") 
     )
   ) 
+
+# Select the first ten rows of data with the new variable included
+sample_data_to_display <- ct_sales |>
+  select(ref_id, address, town, county, street_name, sale_amount) |>
+  head(10)
+
+rownames(sample_data_to_display) <- NULL
+
+kable(sample_data_to_display) |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 ```{r}
-# Create sf object 
+# Create sf object to compute the distance from Grand Central Terminal 
 ct_sales_sf <- ct_sales |> 
   filter(nchar(location) > 0) |>         
   mutate(location = st_as_sfc(location, crs = st_crs(ct_towns))) |>     
@@ -329,7 +345,7 @@ grand_central <- st_sfc(st_point(c(-73.977229, 40.752726)),
 
 grand_central <- st_transform(grand_central, crs = st_crs(ct_sales_sf)) 
 
-# The mappings to be verified
+# These are the mappings that need verification
 to_verify <- ct_sales_sf |>
   mutate(
     point_dist_to_nyc = 
@@ -342,13 +358,14 @@ to_verify <- ct_sales_sf |>
   select(ref_id, address, street_name, town, lon, lat, point_dist_to_nyc)
 
 rownames(to_verify) <- NULL
+
 ```
 
 ### Define a function to compute the distance range for each town from Grand Central Terminal
 
 ```{r}
 # Define a function to compute the distances from each point in the town 
-# geometry and determine the range
+# geometry and determine the distance range
 compute_town_dist_range <- function(town_name){
   vertices <- towns_sf |>
     filter(NAME == town_name) |>
@@ -386,6 +403,18 @@ mappings_verified <- to_verify |>
   mutate(
     is_valid_location = between(point_dist_to_nyc, min_dist_km, max_dist_km)
   )
+
+
+# Display the first ten rows of verified coordinates 
+first10_mappings_verified <- mappings_verified |>
+  select(address, town, point_dist_to_nyc, min_dist_km, max_dist_km, is_valid_location) |>
+  head(10)
+
+rownames(first10_mappings_verified) <- NULL
+
+kable(first10_mappings_verified, 
+      caption = "First 10 Rows of Verified Mappings") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 
@@ -589,6 +618,11 @@ land_use_codes <- land_use_codes |>
       TRUE ~ ""
     )
   )
+
+# Display the first 20 rows of land use code in Connecticut
+kable(head(land_use_codes,20), 
+      caption = "First 10 Rows of Land Use Code") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 
@@ -819,6 +853,7 @@ highlighting Fairfield’s dominant position as the primary market for luxury re
 estate in the state.
 
 ```{r}
+library(patchwork)
 # Count the number of single family home sales with over 5 million for each county
 hotspots <- ct_sales_cleaned |>
   filter(property_type %in% c("Residential", "Single Family"), 
@@ -833,8 +868,8 @@ hotspots <- ct_sales_cleaned |>
     label = paste0(county, "\n", round(percentage, 1), "%")
   )
 
-# plot 
-ggplot(hotspots, aes(x = "", y = count, fill = county)) +
+# Plot Pie 
+pie_plot <- ggplot(hotspots, aes(x = "", y = count, fill = county)) +
   geom_col(width = 1, color = "white") +
   coord_polar(theta = "y") +
   geom_text(aes(label = label), position = position_stack(vjust = 0.5), size = 4) +
@@ -845,8 +880,34 @@ ggplot(hotspots, aes(x = "", y = count, fill = county)) +
     legend.position = "none"
   ) +
   scale_fill_manual(values = c("Fairfield" = "#2a9d8f", "Others" = "#e9c46a"))
-```
 
+
+# Create a table 
+high_value_summary <- ct_sales_cleaned |>
+  filter(property_type %in% c("Residential", "Single Family"), 
+         sale_amount > 5000000) |>
+  group_by(county) |>
+  summarise(
+    count = n(),
+    .groups = "drop"
+   ) |>
+  mutate(
+    percentage = round(count/sum(count) * 100, 2)
+  )
+
+colnames(high_value_summary) <- str_to_title(colnames(high_value_summary))
+
+library(gridExtra)
+
+hotspots_tbl <- tableGrob(
+  high_value_summary,
+  rows = NULL
+)
+
+# 
+pie_plot + wrap_elements(hotspots_tbl) +
+  plot_layout(widths = c(1, 1))
+```
 
 # Feature Engineering 
 
@@ -881,7 +942,7 @@ sample <- ct_sales_cleaned |>
   head(10)
 
 # Display the first ten rows of the data set
-kable(sample, caption = "First 10 Rows of Sample Data") |>
+kable(sample, caption = "First 10 Rows of Data with First Predictor") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
@@ -910,8 +971,11 @@ kable(sample, caption = "First 10 Rows of Sample Data") |>
 #   pull()
   
 
-# dist_from_train_stops <- stop_list |> map(compute_distance) |> bind_cols()
-# write.csv(dist_from_train_stops, "dist_from_train_stops.csv", row.names = FALSE)
+# dist_to_train_stops <- stop_list |> map(compute_distance) |> bind_cols()
+# 
+# Save the computed distance from each property to each Metro-North Station
+# write.csv(dist_to_train_stops, "dist_to_train_stops.csv", row.names = FALSE)
+
 
 dist_to_train_stops <- read.csv("dist_to_train_stops.csv")
 
@@ -939,7 +1003,7 @@ sample_data <- ct_sales_cleaned |>
   head(10)
 
 # Display the first ten rows of the data set
-kable(sample_data, caption = "First 10 Rows of Sample Data") |>
+kable(sample_data, caption = "First 10 Rows of Data with Second Predictor") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
