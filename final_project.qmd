@@ -39,7 +39,7 @@ valuable insights for urban planners, real estate developers/analysts, and polic
 makers.
 
 
-# Data Acquisitions
+# Data Acquisition
 
 ## Connecticut Real Estate Sales Dataset
 
@@ -262,10 +262,6 @@ ct_sales <- ct_sales |> filter(nchar(non_use_code) == 0)
 
 # Remove transactions with `sale_amount` 0 
 ct_sales <- ct_sales |> filter(sale_amount > 10000)
-
-# Display the first ten rows of the data set
-kable(head(ct_sales, 10), caption = "First 10 Rows of CT Sales") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
 
@@ -619,8 +615,8 @@ land_use_codes <- land_use_codes |>
     )
   )
 
-# Display the first 20 rows of land use code in Connecticut
-kable(head(land_use_codes,20), 
+# Display the first 10 rows of land use code in Connecticut
+kable(head(land_use_codes,10), 
       caption = "First 10 Rows of Land Use Code") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
