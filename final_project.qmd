@@ -1,5 +1,5 @@
 ---
-title: "Final Project: How does proximity to NYC impact the real estate pricing in Connecticut?"
+title: "Course Project: How does proximity to NYC impact the real estate pricing in Connecticut?"
 author: Hong Zhuang
 format:
   html:
@@ -43,7 +43,7 @@ makers.
 
 ## Connecticut Real Estate Sales Dataset
 
-The primary data source used in our analysis can be found at: [CT Real Estate Sales](https://data.ct.gov/Housing-and-Development/Real-Estate-Sales-2001-2022-GL/5mzw-sjtu/about_data)
+The primary data source used in our analysis is available at: [CT Real Estate Sales](https://data.ct.gov/Housing-and-Development/Real-Estate-Sales-2001-2022-GL/5mzw-sjtu/about_data)
 
 ```{r}
 # Load relevant packages
@@ -66,12 +66,27 @@ library(ggthemes)
 library(knitr)
 library(kableExtra)
 
-# Read the sales dataset into R
-ct_sales <- read.csv("~/STA9750/STA9750-2025-SPRING/data/fp01/ct_sales.csv")
+# Direct download link for the sales data
+url <- "https://data.ct.gov/api/views/5mzw-sjtu/rows.csv?accessType=DOWNLOAD"
+
+data_dir <- "data/course_project"
+file_name <- file.path(data_dir, "ct_sales.csv")
+
+if(!dir.exists(data_dir)){
+  dir.create(data_dir, showWarnings=FALSE, recursive=TRUE)
+}
+
+# Download file only if it doesn't already exist
+if(!file.exists("data/course_project/ct_sales.csv")){
+  download.file(url, destfile = file_name, mode = "wb", quiet = TRUE)
+}
+   
+# Read sales data into R
+ct_sales <- read_csv(file_name)
 
 # Format `ct_sales` column names 
 colnames(ct_sales) <- tolower(gsub("\\.", "_", colnames(ct_sales)))
-
+colnames(ct_sales) <- tolower(gsub(" ", "_", colnames(ct_sales)))
 
 # Create a unique ID for each transaction to facilitate easier referencing 
 # and joining with other data sources
@@ -106,27 +121,64 @@ kable(head(ct_sales, 10), caption = "First 10 Rows of CT Real Estate Sales") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
-## Connecticut County and Town Shape files
+## Download Connecticut County and Town Shapefiles
 
 ```{r}
-# Read county shape file into R
-counties <- st_read("~/downloads/tl_2020_us_county/tl_2020_us_county.shp", 
-                    quiet = TRUE) |>
-  filter(STATEFP == "09")
+# Read county shapefile into R
+county_shp_url <- "https://www2.census.gov/geo/tiger/TIGER2020/COUNTY/tl_2020_us_county.zip"
+zip_county_shp_path <- file.path(data_dir, "tl_2020_us_county.zip")
+unzip_county_shp_path <- file.path(data_dir, "tl_2020_us_county")
+county_shp_file <- file.path(unzip_county_shp_path, "tl_2020_us_county.shp")
 
-# Town shape file
-ct_towns <- st_read("~/downloads/tl_2020_09_cousub/tl_2020_09_cousub.shp", 
-                    quiet = TRUE)
+if(!file.exists(county_shp_file)){
+  download.file(county_shp_url, destfile = zip_county_shp_path, quiet = TRUE)
+  
+  # Unzip
+  unzip(zipfile = zip_county_shp_path, exdir = unzip_county_shp_path)
+}
+
+counties <- st_read(county_shp_file, quiet = TRUE) |> filter(STATEFP == "09")
+
+# Read town shapefile into R
+town_shp_url <- "https://www2.census.gov/geo/tiger/TIGER2020/COUSUB/tl_2020_09_cousub.zip"
+zip_town_shp_path <- file.path(data_dir, "tl_2020_09_cousub.zip")
+unzip_town_shp_path <- file.path(data_dir, "tl_2020_09_cousub")
+town_shp_file <- file.path(unzip_town_shp_path,"tl_2020_09_cousub.shp")
+
+if(!file.exists(town_shp_file)){
+  download.file(town_shp_url, destfile = zip_town_shp_path, mode = "wb", quiet = TRUE)
+  
+  # Unzip shapefiles
+  unzip(zipfile = zip_town_shp_path, exdir = unzip_town_shp_path)
+}
+
+ct_towns <- st_read(town_shp_file, quiet = TRUE)
+
 ```
 
 
 ## Metro-North Railroad
 
-The Metro-North stations can be obtained here: [Metro-North Railroad](https://www.mta.info/developers)
-
 ```{r}
-stops <- read.delim("~/STA9750/STA9750-2025-SPRING/data/fp01/gtfsmnr/stops.txt", 
-                    header = TRUE, sep = ",", stringsAsFactors = FALSE)
+# Download Metro-North stops 
+gtfs_url <- "https://rrgtfsfeeds.s3.amazonaws.com/gtfsmnr.zip"
+zip_path <- file.path(data_dir, "gtfsmnr.zip")
+unzip_file_path <- file.path(data_dir, "metro-north")
+stops_file <- file.path(unzip_file_path, "stops.txt")
+
+if(!dir.exists(data_dir)){
+  dir.create(data_dir, showWarnings = FALSE, recursive = TRUE)
+}
+
+if(!file.exists(stops_file)){
+  download.file(gtfs_url, destfile = zip_path, mode = "wb", quiet = TRUE)
+  
+  # Unzip files
+  unzip(zipfile = zip_path, exdir = unzip_file_path)
+}
+
+# Read Metro-North stops data into R
+stops <- read.delim(stops_file, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 # Connecticut towns' geometry 
 ct_towns_geom <- ct_towns |> select(STATEFP, NAME)
@@ -182,55 +234,87 @@ kable(to_display, caption = "First 10 Rows of Metro-North Stations") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
-## CT transit Data
-
-CT transit data can be found: [CT Bus Data](https://www.cttransit.com/about/developers)
+## Download CT transit Data
 
 ```{r}
-# bus_stops <- read.delim("~/Downloads/googlect_transit/stops.txt",
-#                         header = TRUE, sep = ",", stringsAsFactors = FALSE) |>
-#   select(
-#     stop_id, stop_code, stop_name, stop_lat, stop_lon  # Select relevant columns
-#   )
+# GTFS file URL for CT transit data 
+ct_bus_url <- "https://www.cttransit.com/sites/default/files/gtfs/googlect_transit.zip"
+zip_file_path <- file.path(data_dir, "googlect_transit.zip")
+unzip_file_path <- file.path(data_dir, "ct_bus")
 
-# stop_times <- read.delim("~/Downloads/googlect_transit/stop_times.txt", 
-#                          header = TRUE, sep = ",", stringsAsFactors = FALSE)
+# Check files 
+files_to_unzip <- c("stops.txt", "trips.txt", "stop_times.txt")
 
-# trips <- read.delim("~/Downloads/googlect_transit/trips.txt", 
-#                     header = TRUE, sep = ",", stringsAsFactors = FALSE)
+files_to_check <- file.path(unzip_file_path, files_to_unzip)
 
+if(!all(file.exists(files_to_check))){
+  download.file(ct_bus_url, destfile = zip_file_path, mode = "wb", quiet = TRUE)
+  
+  # Unzip
+  unzip(zipfile = zip_file_path, exdir = unzip_file_path)
+}
 
-# # Combine these data sets to obtain trip-level bus data in Connecticut
-# bus_trip_stop_data <- stop_times |>
-#   left_join(bus_stops, by = "stop_id") |>
-#   left_join(trips, by = "trip_id") |>
-#   select(
-#     trip_id,
-#     route_id,
-#     block_id,
-#     shape_id,
-#     stop_sequence,
-#     stop_id, 
-#     arrival_time,
-#     departure_time,
-#     shape_dist_traveled,
-#     stop_name,
-#     town, 
-#     lon,
-#     lat, 
-#     state,
-#   )
-# Save the combined datasets
-# write.csv(bus_trip_stop_data, "bus_trip_stop_data.csv", row.names = FALSE)
+# Read relevant files into R
+stops_file <- file.path(unzip_file_path, "stops.txt")
+bus_stops <- read.delim(stops_file, header = TRUE, sep = ",", 
+                        stringsAsFactors = FALSE) |>
+  select(
+    stop_id, stop_code, stop_name, stop_lat, stop_lon,
+  )
 
-# Read the trip-level data into R
-bus_trip_stop_data <- read.csv("bus_trip_stop_data.csv")
+stop_times_file <- file.path(unzip_file_path, "stop_times.txt")
+stop_times <- read.delim(stop_times_file, header = TRUE, sep = ",",
+                         stringsAsFactors = FALSE)
+
+trips_file <- file.path(unzip_file_path, "trips.txt")
+trips <- read.delim(trips_file, header = TRUE, sep = ",", 
+                    stringsAsFactors = FALSE)
+
+# Map bus stop to town 
+bus_stops_sf <- st_as_sf(bus_stops, coords = c("stop_lon", "stop_lat"), 
+                     crs = st_crs(ct_towns))
+
+bus_stops <- st_join(bus_stops_sf, ct_ny_towns_geom, join = st_within) |> 
+  mutate(
+    lon = st_coordinates(geometry)[, 1],
+    lat = st_coordinates(geometry)[, 2]
+  ) |>
+  st_drop_geometry() |>
+  rename(town = NAME) |>
+  mutate(
+    state = case_when(
+      STATEFP == "09" ~ "CT",
+      STATEFP == "36" ~ "NY",
+      TRUE ~ ""
+    )
+  ) |>
+  select(-STATEFP)
+  
+# Combine these data sets to obtain trip-level bus data in Connecticut
+bus_trip_stop_data <- stop_times |>
+  left_join(bus_stops, by = "stop_id") |>
+  left_join(trips, by = "trip_id") |>
+  select(
+    trip_id,
+    route_id,
+    block_id,
+    shape_id,
+    stop_sequence,
+    stop_id,
+    arrival_time,
+    departure_time,
+    shape_dist_traveled,
+    stop_name,
+    town,
+    lon,
+    lat,
+    state,
+  )
 
 # Display the first ten rows
 kable(head(bus_trip_stop_data, 10), caption = "First 10 Rows of CT Bus Trips") |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
-
 
 
 # Data Cleaning  
@@ -258,7 +342,7 @@ ct_sales <- ct_sales |>
   anti_join(to_remove, by = c("serial_number", "address"))
 
 # Remove properties with non_use_code 
-ct_sales <- ct_sales |> filter(nchar(non_use_code) == 0)
+ct_sales <- ct_sales |> filter(is.na(non_use_code))
 
 # Remove transactions with `sale_amount` 0 
 ct_sales <- ct_sales |> filter(sale_amount > 10000)
@@ -331,7 +415,7 @@ kable(sample_data_to_display) |>
 ```{r}
 # Create sf object to compute the distance from Grand Central Terminal 
 ct_sales_sf <- ct_sales |> 
-  filter(nchar(location) > 0) |>         
+  filter(!is.na(location)) |>         
   mutate(location = st_as_sfc(location, crs = st_crs(ct_towns))) |>     
   st_as_sf()  
 
@@ -400,7 +484,6 @@ mappings_verified <- to_verify |>
     is_valid_location = between(point_dist_to_nyc, min_dist_km, max_dist_km)
   )
 
-
 # Display the first ten rows of verified coordinates 
 first10_mappings_verified <- mappings_verified |>
   select(address, town, point_dist_to_nyc, min_dist_km, max_dist_km, is_valid_location) |>
@@ -413,11 +496,10 @@ kable(first10_mappings_verified,
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
 ```
 
-
-## Imputation of Missing Values: `location`
+## Handling Missing Geographic Data
 
 Impute missing values of `location` based on verified correct mappings from the 
-same street and town. 
+matching street name and town. 
 
 ```{r}
 # Create a unique street identifier by combining street_name and town
@@ -437,7 +519,7 @@ loc_imp_ref <- mappings_verified |>
 # Begin by imputing `location` values using verified coordinates matched by 
 # `street_name` and `town`
 ct_sales_imputed <- ct_sales |> 
-  filter(nchar(location) == 0) |>
+  filter(is.na(location)) |>
   left_join(loc_imp_ref, by = "street_name1") |>
   rename(
     ref_id = ref_id.x
@@ -457,7 +539,7 @@ ct_sales_imputed <- ct_sales_imputed |>
 # This subset of the data contains records whose location values were 
 # verified in the previous step
 ct_sales_verified <- ct_sales |> 
-  filter(nchar(location) > 0) |>
+  filter(!is.na(location)) |>
   mutate(
     lon = as.numeric(str_extract(location, "(?<=\\().*?(?=\\s)")),
     lat = as.numeric(str_extract(location, "(?<=\\s)-?\\d+\\.\\d+(?=\\))"))
@@ -514,17 +596,17 @@ ct_sales <- ct_sales |> select(-centroid_lon, -centroid_lat)
 ```
 
 
-## Handle Missing Values: `property_type`
+## Handling Categorical Missing Data: Property Type
 
 ```{r}
 ct_sales <- ct_sales |> mutate(address1 = paste(address, town))
 
 # Properties with missing property type 
 property_missing_type <- ct_sales |>
-  filter(nchar(property_type) == 0)
+  filter(is.na(property_type))
 
 property_w_type <- ct_sales |>
-  filter(nchar(property_type) > 0)
+  filter(!is.na(property_type))
 
 
 # Find common properties in both categories 
@@ -551,128 +633,17 @@ property_missing_type <- property_missing_type |>
 
 # Combine updated properties with the existing `property_w_type` data frame
 property_w_type <- bind_rows(
-  property_missing_type |> filter(nchar(property_type) > 0),    
+  property_missing_type |> filter(!is.na(property_type)),    
   property_w_type
 )
 
 # New subset of properties without `property_type`
 property_missing_type <- property_missing_type |>
   filter(is.na(property_type))
-```
-
-### Fill Missing Values: Using [CT State Parcel Records](https://geodata.ct.gov/datasets/ctmaps::connecticut-cama-and-parcel-layer/explore)
-
-Obtain property type information from the Connecticut parcel data: `state_use` 
-and `state_use_description` provide the details about the property type and 
-residential type.
-
-```{r}
-# Parcel data of Connecticut
-state_parcel_data <- read.csv("~/Downloads/Connecticut_CAMA_and_Parcel_Layer_3895368049124948111.csv")
-
-# Format `state_parcel` column names
-colnames(state_parcel_data) <- tolower(gsub("\\.", "_", 
-                                            colnames(state_parcel_data)))
-
-# Connecticut land use code and description
-land_use_codes <- read.csv("~/Downloads/Connecticut Land Use Codes.csv")
-colnames(land_use_codes) <- tolower(colnames(land_use_codes))
-
-# Find code prefix for easy property type mapping
-land_use_codes <- land_use_codes |>
-  mutate(
-    code_prefix = substr(code, 1, 3)
-  )
-
-# Vacant land use code 
-vacant_land_codes <- land_use_codes |>
-  filter(grepl("vac", description, ignore.case = TRUE)) |>
-  select(code) |>
-  pull()
-
-# Map land use codes to property types
-land_use_codes <- land_use_codes |>
-  mutate(
-    property_type = case_when(
-      description == "null" ~ "Unknown",
-      description == "Apartment Land" ~ "Apartment Land",
-      code %in% vacant_land_codes ~ "Vacant Land",
-      as.numeric(code_prefix) >= 100 & as.numeric(code_prefix) < 200 ~ "Residential",
-      as.numeric(code_prefix) >= 200 & as.numeric(code_prefix) < 300 ~ "Commercial",
-      as.numeric(code_prefix) >= 300 & as.numeric(code_prefix) < 400 ~ "Industrial",
-      as.numeric(code_prefix) >= 400 & as.numeric(code_prefix) < 500 ~ "Public Utility",
-      as.numeric(code_prefix) >= 600 & as.numeric(code_prefix) < 800 ~ "Agricultural",
-      as.numeric(code_prefix) >= 800 & as.numeric(code_prefix) < 900 ~ "Apartments",
-      TRUE ~ "Other"
-    ),
-    residential_type = case_when(
-      property_type == "Residential" & grepl("res", description, ignore.case = TRUE) ~ "Residential",
-      property_type == "Residential" & grepl("condo", description, ignore.case = TRUE) ~ "Condominium",
-      property_type == "Residential" & grepl("sfr", description, ignore.case = TRUE) ~ "Single Family",
-      property_type == "Residential" & grepl("2 fam", description, ignore.case = TRUE) ~ "Two Family",
-      property_type == "Residential" ~ description,
-      TRUE ~ ""
-    )
-  )
-
-# Display the first 10 rows of land use code in Connecticut
-kable(head(land_use_codes,10), 
-      caption = "First 10 Rows of Land Use Code") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = F)
-```
-
-
-```{r}
-# Select distinct land use description for joining 
-land_use_codes <- land_use_codes |>
-  distinct(description, .keep_all = TRUE)
-
-# Select the properties in `state_parcel` with land use description column 
-property_type_ref <- state_parcel_data |>
-  filter(nchar(location) > 0) |>
-  mutate(
-    location_w_town = paste(location, town_name)
-  ) |>
-  select(
-    location_w_town,
-    state_use_description
-  ) |>
-  distinct(location_w_town, .keep_all = TRUE)
-
-# Left join with `land_use_codes` to obtain property type and residential type info
-property_type_ref <- property_type_ref |>
-  left_join(
-    land_use_codes,
-    by = c("state_use_description" = "description")
-  ) |>
-  select(
-    location_w_town,
-    property_type,
-    residential_type
-  ) |>
-  distinct(location_w_town, .keep_all = TRUE)
-
-# Fill in the `property_type` and `residential_type` 
-
-property_missing_type <- property_missing_type |>
-  left_join(property_type_ref, by = c("address1" = "location_w_town")) |>
-  mutate(
-    property_type.x = property_type.y,
-    residential_type.x = residential_type.y
-  ) |>
-  rename(
-    property_type = property_type.x,
-    residential_type = residential_type.x
-  ) |>
-  select(-ends_with(".y"))
-
-property_w_type <- bind_rows(property_missing_type |> filter(! is.na(property_type)), 
-                             property_w_type)
-
-property_missing_type <- property_missing_type |> filter(is.na(property_type))
 
 ct_sales_cleaned <- bind_rows(property_w_type, property_missing_type) |> arrange(ref_id)
 ```
+
 
 # Exploratory Data Analysis
 
@@ -714,7 +685,7 @@ strong market activity, with 27,213 repeated transactions during the period.
 
 
 ```{r}
-# Find repeated sales 
+# Find repeated sales
 # repeated_sales <- ct_sales_cleaned |>
 #   arrange(address1, list_year) |>
 #   group_by(address1) |>
@@ -763,7 +734,7 @@ ggplot(n_repeated_sales_by_county, aes(x = reorder(county, -total), y = total)) 
 
 Rapid home price appreciation typically indicates a strong and robust market. 
 Fairfield County stands out with the highest average increase in single-family 
-home values, rising by approximately $169,000 between 2001 and 2022. This growth 
+home values, rising by approximately $172,000 between 2001 and 2022. This growth 
 is more than double the appreciation seen in Middlesex and Litchfield counties, 
 and over three times greater than in Hartford County. The substantial increase 
 underscores Fairfield’s market strength. It also reinforces the pattern of 
@@ -946,49 +917,46 @@ kable(sample, caption = "First 10 Rows of Data with First Predictor") |>
 ## Compute Distance from Each Property to the Nearest Train Station
 
 ```{r}
-# Define a function to compute the distances from each train station for each property 
+# Define a function to compute the distances from each train station for each property
 # compute_distance <- function(stop_id_value){
 #   stop <- stops_sf |>
 #     filter(stop_id == stop_id_value)
-#   
+# 
 #   # Compute distances in kilometers
-#   distances <- as.numeric(st_distance(properties, stop))/1000
+#   distances <- as.numeric(st_distance(property_list, stop))/1000
 # 
 #   data.frame(
-#     dist = distances 
+#     dist = distances
 #   )
 # }
 # 
-# properties <- ct_sales_sf |> select(ref_id, geometry)
+# property_list <- ct_sales_sf |> select(ref_id, geometry)
 # 
 # stop_list <- stops |>
-#   filter(state == "CT") |>
 #   select(stop_id) |>
 #   pull()
   
 
-# dist_to_train_stops <- stop_list |> map(compute_distance) |> bind_cols()
-# 
-# Save the computed distance from each property to each Metro-North Station
-# write.csv(dist_to_train_stops, "dist_to_train_stops.csv", row.names = FALSE)
-
-
-dist_to_train_stops <- read.csv("dist_to_train_stops.csv")
+# dist_to_train_stations <- stop_list |> map(compute_distance) |> bind_cols()
 
 # Find the distance to the nearest Metro-North station for each property
-min_distance <- apply(dist_to_train_stops[, 2:ncol(dist_to_train_stops)], 1, min, na.rm = TRUE)
+# min_distance <- apply(distance_to_train_stations[, 2:ncol(distance_to_train_stations)], 1, min, na.rm = TRUE)
 
+# ref_idx <- property_list |> st_drop_geometry() |> select(ref_id)
+# min_dist_to_train_station <- cbind(ref_idx, min_distance)
+# 
+# write.csv(min_dist_to_train_station, "min_dist.csv", row.names = FALSE)
 
-to_join <- dist_to_train_stops |>
+min_dist <- read.csv("min_dist.csv")
+
+# Round the distance to the 10th place for readability
+min_dist <- min_dist |>
   mutate(
-    dist = round(min_distance, 2)
-  ) |>
-  select(
-    ref_id, dist
-  ) 
+    min_distance = round(min_distance, 2)
+  )
 
-ct_sales_cleaned <- ct_sales_cleaned |> left_join(to_join, by = "ref_id") |> 
-  rename(nearest_rail_station_dist = dist)
+ct_sales_cleaned <- ct_sales_cleaned |> left_join(min_dist, by = "ref_id") |> 
+  rename(nearest_rail_station_dist = min_distance)
 
 # After performing feature engineering, select the desired columns for display
 sample_data <- ct_sales_cleaned |>
@@ -1104,7 +1072,7 @@ ggplot(fairfield, aes(x = nearest_rail_station_dist, y = sale_amount)) +
   scale_y_continuous(labels = dollar_format()) +
   labs(
     title = "Distance to Nearest Train Station and Home Price in Fairfield County",
-    x = "Distance to Nearest Train Station (km or miles)",
+    x = "Distance to Nearest Train Station (km)",
     y = "Sale Amount (USD)"
   ) +
   theme_minimal() 
@@ -1112,11 +1080,45 @@ ggplot(fairfield, aes(x = nearest_rail_station_dist, y = sale_amount)) +
 cor(fairfield$nearest_rail_station_dist, fairfield$sale_amount)
 ```
 
-## 8. How do average property values differ by property type between New Haven and Hartford towns?
+## 8. How does proximity to New York City correlate with home values across Connecticut?
 
-Across multiple residential types, New Haven town consistently commands higher 
-prices than Hartford: on average, single-family homes are 41.63% more expensive, 
-three-family homes are 32.81% higher, and two-family homes command a 17.63% premium.
+Analysis reveals a moderate negative correlation of -0.51 between distance to 
+New York City (measured from Grand Central Terminal) and log-transformed home 
+sale prices across Connecticut. This suggests that, on average, properties 
+located closer to New York City tend to command higher prices. While distance 
+is not the sole determinant of home value, proximity to the metropolitan center 
+appears to be a significant locational factor influencing real estate pricing, 
+potentially reflecting demand for commuter access and economic opportunities. 
+
+```{r}
+ct_homes <- ct_sales_cleaned |>
+  filter(property_type %in% c("Residentital", "Single Family")) |>
+  mutate(
+    log_sale_amount = log(sale_amount)
+  ) |>
+  select(log_sale_amount, point_dist_to_nyc)
+
+# Plot
+ggplot(ct_homes, aes(x = point_dist_to_nyc, y = log_sale_amount)) +
+  geom_point(alpha = 0.4, color = "#4682B4") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred", linetype = "dashed") +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(
+    title = "Impact of Distance to Grand Central Terminal on Log-Transformed Home Prices",
+    x = "Distance to Grand Central Terminal (km)",
+    y = "Log-Transformed Sale Amount (USD)"
+  ) +
+  theme_minimal() 
+
+
+cor(ct_homes$point_dist_to_nyc, ct_homes$log_sale_amount)
+```
+
+## 9. How do average property values differ by property type between New Haven and Hartford towns?
+
+Across multiple residential types, New Haven consistently commands higher 
+prices than Hartford: on average, single-family homes are 41.38% more expensive, 
+three-family homes are 32.94% higher, and two-family homes command a 17.82% premium.
 These patterns suggest that access to commuter rail significantly influences
 real estate demand and pricing power. 
 
@@ -1174,8 +1176,7 @@ ggplot(new_haven_hartford_long, aes(x = property_type, y = avg, fill = town)) +
   )
 ```
 
-
-## 9. Which ten towns in Connecticut have the highest number of bus stops?"
+## 10. Which ten towns in Connecticut have the highest number of bus stops?"
 
 Based on the distribution of bus stops across Connecticut towns, we observe 
 that Hartford, New Haven, and Waterbury lead in public transit infrastructure, 
@@ -1183,10 +1184,10 @@ each with more than 750 bus stops.
 
 ```{r}
 # CT bus stops data
-bus_stops <- read.delim("~/Downloads/googlect_transit/stops.txt", 
-                        header = TRUE, sep = ",", stringsAsFactors = FALSE) |>
+bus_stops <- read.delim(stops_file, header = TRUE, sep = ",", 
+                        stringsAsFactors = FALSE) |>
   select(
-    stop_id, stop_code, stop_name, stop_lat, stop_lon   # Select relevant columns
+    stop_id, stop_code, stop_name, stop_lat, stop_lon,
   )
 
 # Connecticut towns' geometry 
@@ -1241,7 +1242,7 @@ ggplot(top10_town, aes(x = reorder(town, n_stops), y = n_stops)) +
 ```
 
 
-## 10. What are the top five towns with the most connectivity to other towns? 
+## 11. What are the top five towns with the most connectivity to other towns? 
 
 Hartford stands out as the most connected town in Connecticut's bus network, 
 with direct connections to 62 other towns. This high level of connectivity 
@@ -1279,7 +1280,7 @@ top5_towns <- town_connectivity |> slice_max(n_connected_towns, n = 5)
 # Plot
 ggplot(top5_towns, aes(x = reorder(town, -n_connected_towns), 
                        y = n_connected_towns)) +
-  geom_col(fill = "#bb9457", alpha = 0.85) +
+  geom_col(fill = "#4682B4") +
   geom_text(aes(label = n_connected_towns), vjust = -0.3, size = 4) +
   labs(
     title = "Top Towns by Connectivity to Other Towns",
@@ -1298,9 +1299,9 @@ ggplot(top5_towns, aes(x = reorder(town, -n_connected_towns),
 
 # Model Performance
 
-- The three predictors together explain 35% variation in real estate pricing in
+- The three predictors together explain 36% variation in real estate pricing in
   Connecticut.
-- Due to missing values in the property type variable, 208,649 observations were 
+- Due to missing values in the property type variable, 223,811 observations were 
   omitted in the model fitting process. This represents a limitation that should
   be addressed in future work.
 
@@ -1317,9 +1318,8 @@ ct_sales_cleaned <- ct_sales_cleaned |>
 # linear regression model using three predictors
 
 model <- lm(log(sale_amount) ~ point_dist_to_nyc + 
-              centered_nearest_rail_station_dist + 
-              property_type,
-            data = ct_sales_cleaned)
+              centered_nearest_rail_station_dist +
+              property_type, data = ct_sales_cleaned)
 
 summary(model)
 ```
